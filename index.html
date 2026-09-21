@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#601b20">
+  <meta name="description" content="Sarvajanik Ganeshotsav Mandal, Sanvordem. Mahaprasad Pavti coupons draw, 25 September 2026.">
+  <title>Sanvordem Ganeshotsav | Prize announcement</title>
+  <link rel="icon" href="ornament.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="prizes.css">
+  <link rel="stylesheet" href="prize-treatment.css">
+  <link rel="stylesheet" href="all-vehicles.css">
+  <link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+  <!-- THESIS: A ceremonial announcement stage, not a dashboard.
+  OWN-WORLD: Vermilion, brass and ivory; temple arches, engraved rules and large numeral plaques.
+  STORY: Welcome the community, present the prizes, honour past winners, announce the physical draw.
+  FIRST VIEWPORT: An immersive Ganesh poster or full-screen loop; presenter controls recede while idle.
+  FORM: User-approved festival stage. Mirrored operation; live numbers dominate and confirmed results remain nearby. -->
+  <div id="app" class="app" data-screen="welcome">
+    <header class="masthead">
+      <a class="identity" href="#welcome" aria-label="Return to welcome">
+        <span class="identity-mark" aria-hidden="true"></span>
+        <span>Sarvajanik Ganeshotsav Mandal<small>Sanvordem &middot; Goa</small></span>
+      </a>
+      <div class="header-tools">
+        <button id="fullscreen-button" class="icon-button" aria-label="Enter fullscreen" title="Fullscreen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg>
+        </button>
+        <button id="settings-button" class="icon-button" aria-label="Open settings" title="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6m6 4v6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="storage-alert" class="storage-alert" role="alert" hidden></div>
+
+    <main id="main">
+      <section id="screen-welcome" class="screen welcome-screen" aria-label="Ganesh welcome presentation">
+        <div id="welcome-placeholder" class="welcome-placeholder">
+          <img class="welcome-poster-image" src="resources/ganesh-01.jpeg" alt="The Mandal's Ganesh idol at the Sanvordem mandap">
+        </div>
+        <div class="welcome-video-frame">
+          <video id="welcome-video" class="welcome-video" muted loop playsinline preload="metadata" hidden aria-label="Ganesh welcome animation"></video>
+        </div>
+        <div class="welcome-halo" aria-hidden="true"></div>
+        <div class="welcome-copy">
+          <p class="welcome-mandal">SARVAJANIK GANESHOTSAV MANDAL<span class="welcome-place">Sanvordem &middot; Goa</span></p>
+          <p class="welcome-milestones"><span class="milestone">Estd. <strong>1978</strong></span><span class="milestone-sep" aria-hidden="true"></span><span class="milestone"><strong>49</strong>th year</span></p>
+          <p class="invocation" lang="mr">&#x936;&#x94D;&#x930;&#x940; &#x917;&#x923;&#x947;&#x936;&#x93E;&#x92F; &#x928;&#x92E;&#x903;</p>
+          <h1 id="welcome-title" class="marathi-title" lang="mr" aria-label="&#2360;&#2366;&#2357;&#2352;&#2381;&#2337;&#2375;&#2330;&#2366; &#2352;&#2366;&#2332;&#2366;">
+            <img src="artwork/ganesh-title.png" width="535" height="207" alt="">
+          </h1>
+          <p class="event-title">Mahaprasad Pavti<br>Coupons Draw <strong>2026</strong></p>
+          <p class="event-date">25 September <span aria-hidden="true">&middot;</span> 6:00 pm</p>
+        </div>
+        <button class="welcome-start button gold-button" data-screen="draw">Open draw <span aria-hidden="true">&rarr;</span></button>
+      </section>
+
+      <section id="screen-prizes" class="screen prizes-screen" aria-labelledby="prizes-title" hidden>
+        <div class="prizes-topline">
+          <div class="section-heading"><h1 id="prizes-title">Prizes</h1></div>
+          <div class="segmented" aria-label="Prize presentation">
+            <button data-showcase="all" aria-pressed="true">All vehicles</button>
+            <button data-showcase="prizes" aria-pressed="false">Spotlight</button>
+            <button data-showcase="sponsors" aria-pressed="false">Supporters</button>
+            <button data-showcase="committee" aria-pressed="false">Committee</button>
+            <button data-showcase="hall" aria-pressed="false">Community hall</button>
+            <button data-showcase="coupon" aria-pressed="false">Coupon</button>
+          </div>
+        </div>
+        <div class="prizes-layout">
+          <div class="prize-main content-main">
+            <div id="prize-showcase" class="prize-showcase"></div>
+            <div id="vehicle-overview" class="vehicle-overview" aria-label="All vehicle prizes, grouped by type" hidden></div>
+            <div id="sponsor-showcase" class="sponsor-showcase" hidden></div>
+            <section id="committee-showcase" class="committee-showcase" aria-label="Mandal personnel" hidden>
+              <p class="committee-intro">Sarvajanik Ganeshotsav Mandal &middot; Sanvordem, Goa</p>
+              <div id="committee-list" class="committee-list"></div>
+            </section>
+            <div id="coupon-showcase" class="coupon-showcase" hidden>
+              <button class="image-button" data-image="resources/coupon-front.jpeg" data-image-title="Original 2026 coupon front"><img src="resources/coupon-front.jpeg" alt="Original 2026 coupon showing all 30 vehicle prizes and 15 lucky-book prizes"></button>
+              <button class="image-button" data-image="resources/coupon-back.jpeg" data-image-title="Original 2026 coupon back"><img src="resources/coupon-back.jpeg" alt="Original coupon back with supporters and terms"></button>
+            </div>
+            <section id="hall-showcase" class="hall-showcase" aria-label="Community hall" hidden>
+              <button class="image-button hall-showcase-image" data-image="resources/hall-ad.jpeg" data-image-title="Community hall advertisement"><img src="resources/hall-ad.jpeg" alt="Original Sarvajanik Ganeshotsav Mandal hall advertisement, available for weddings, thread ceremonies and birthdays"></button>
+              <p class="hall-booking">For bookings, please contact</p>
+              <div class="hall-contact"><p><span>98232 95690</span><span>98230 78313</span><span>98229 80126</span></p></div>
+            </section>
+            <div id="prize-pagination" class="pagination"></div>
+          </div>
+          <aside id="prize-hall-ad" class="hall-panel hall-prominent" aria-label="Community hall advertisement">
+            <h2>Community hall</h2>
+            <button class="image-button hall-image" data-image="resources/hall-ad.jpeg" data-image-title="Community hall advertisement"><img src="resources/hall-ad.jpeg" alt="Original Sarvajanik Ganeshotsav Mandal hall advertisement, available for weddings, thread ceremonies and birthdays"></button>
+            <div class="hall-contact"><p><span>98232 95690</span><span>98230 78313</span><span>98229 80126</span></p></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="screen-winners" class="screen winners-screen" aria-labelledby="winners-title" hidden>
+        <div class="section-heading"><h1 id="winners-title">Previous winners</h1><span class="year-seal">Winners<br><strong>2025</strong></span></div>
+        <button class="image-button winners-record" data-image="resources/previous-winners.jpeg" data-image-title="Official previous winners, 2025"><img src="resources/previous-winners.jpeg" alt="Official 2025 winner record listing all twenty prizes with photographs and names"></button>
+      </section>
+
+      <section id="screen-draw" class="screen draw-screen" aria-labelledby="draw-title" hidden>
+        <div class="draw-topline">
+          <h1 id="draw-title">Prize draw</h1>
+          <div class="draw-top-actions">
+            <button id="focus-button" class="text-button" aria-pressed="false">Expand number</button>
+            <button id="export-all-button" class="icon-button" type="button" aria-label="Save all results as a PNG" title="Save all results" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></button>
+            <button id="overview-button" class="button outline-button">All results <span aria-hidden="true">&nearr;</span></button>
+          </div>
+        </div>
+        <div id="live-view" class="live-view">
+          <div class="announcement">
+            <div class="prize-picker"><label for="prize-select">Announcing</label><select id="prize-select"></select></div>
+            <div id="active-prize" class="active-prize"></div>
+            <form id="draw-form" novalidate>
+              <label id="number-label" for="ticket-input">Winning coupon number</label>
+              <div id="digit-field" class="digit-field">
+                <div id="digit-panels" class="digit-panels" aria-hidden="true"></div>
+                <input id="ticket-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="entry-hint entry-error" aria-label="Winning coupon number, six digits">
+              </div>
+              <div id="number-status" class="number-status" aria-live="polite"></div>
+              <p id="entry-hint" class="entry-hint">Enter all six digits, then press Enter to announce.</p>
+              <p id="entry-error" class="entry-error" role="alert"></p>
+              <div class="entry-actions">
+                <button id="confirm-button" class="button gold-button" type="submit">Confirm number <kbd>Enter</kbd></button>
+                <button id="correct-button" class="button outline-button" type="button" hidden>Correct result</button>
+                <button id="cancel-correction-button" class="text-button" type="button" hidden>Cancel correction</button>
+                <button id="next-button" class="text-button" type="button">Next undrawn prize <span aria-hidden="true">&rarr;</span></button>
+              </div>
+            </form>
+          </div>
+          <aside class="results-rail" aria-labelledby="recent-title">
+            <div class="rail-heading"><h2 id="recent-title">Confirmed results</h2><span id="result-count">0 / 45</span></div>
+            <div id="recent-results" class="recent-results"></div>
+            <button id="rail-overview-button" class="text-button">All results <span aria-hidden="true">&rarr;</span></button>
+          </aside>
+        </div>
+        <div id="overview-view" class="overview-view" hidden>
+          <div id="board-headings" class="board-headings" aria-hidden="true"></div>
+          <div id="results-grid" class="results-grid"></div>
+          <div id="entry-anchor" class="entry-anchor"></div>
+        </div>
+        <section id="mandal-strip" class="mandal-strip" aria-label="Prize collection terms and committee contacts"></section>
+      </section>
+    </main>
+    <div id="celebration" class="celebration" aria-hidden="true"></div>
+
+    <footer class="stage-footer">
+      <nav class="stage-nav" aria-label="Presentation screens">
+        <button data-screen="welcome" aria-current="page"><span class="nav-dot"></span>Welcome</button>
+        <button data-screen="prizes"><span class="nav-dot"></span>Prizes</button>
+        <button data-screen="winners"><span class="nav-dot"></span>2025 winners</button>
+        <button data-screen="draw"><span class="nav-dot"></span>Draw</button>
+      </nav>
+      <span id="save-status" class="visually-hidden" role="status">Local rehearsal</span>
+    </footer>
+  </div>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" class="dialog-content">
+      <div class="dialog-heading"><h2 id="settings-title">Stage settings</h2><button type="button" class="icon-button close-dialog" aria-label="Close settings">&times;</button></div>
+      <p class="dialog-intro">These controls are visible on the mirrored screen. Changes never clear saved results.</p>
+      <div class="playback-controls" role="group" aria-label="Motion and sound">
+        <button id="motion-button" class="button outline-button" type="button" aria-pressed="false">Pause motion</button>
+        <button id="sound-button" class="button outline-button" type="button" aria-pressed="false">Sound effects off</button>
+      </div>
+      <p class="playback-note">Motion and sound switches apply immediately. The background video stays muted.</p>
+      <p id="playback-error" class="entry-error" role="alert"></p>
+      <div class="settings-grid">
+        <label>Draw record<select id="setting-mode"><option value="rehearsal">Rehearsal (separate practice results)</option><option value="event">Live event - 25 September 2026</option></select></label>
+        <label>Sound volume<input id="setting-volume" type="range" min="0" max="100" value="35"></label>
+        <label class="checkbox-label"><input id="setting-auto" type="checkbox"><span>Auto-submit on the final digit<small>Off by default. Enter always confirms a complete number.</small></span></label>
+        <label>LED safe margin <span id="margin-value">2%</span><input id="setting-margin" type="range" min="0" max="6" step=".5" value="2"></label>
+      </div>
+      <p id="welcome-media-status" class="welcome-media-status">Welcome: looping video with a poster fallback.</p>
+      <div class="fixed-coupon-info"><h3>Coupon numbers</h3><p data-coupon-range>Only 1,20,000 coupons &middot; Nos. 000000 to 119999</p><p>Six digits for every prize, including lucky-book prizes.</p></div>
+      <p id="settings-error" class="entry-error" role="alert"></p>
+      <div class="dialog-actions"><button class="button gold-button" type="submit">Save settings</button><button class="text-button close-dialog" type="button">Cancel</button></div>
+      <div id="presentation-recovery" class="data-tools" hidden><h3>Repair presentation options</h3><p>Restore the default margin, motion and volume settings. Neither draw record nor its results will be changed.</p><button id="reset-presentation-button" type="button" class="button outline-button">Reset presentation options only</button></div>
+      <div class="data-tools"><h3>Keep a backup</h3><p>Local storage belongs to this browser and address. A downloaded JSON backup can restore the draw on another computer.</p><div><button id="backup-button" type="button" class="button outline-button">Download JSON backup</button><button id="restore-button" type="button" class="text-button">Restore backup</button></div><input id="restore-input" type="file" accept=".json,application/json" hidden></div>
+      <div class="danger-zone"><span>Start this record again</span><button id="reset-button" class="text-button" type="button">Reset saved numbers</button></div>
+    </form>
+  </dialog>
+  <dialog id="confirm-dialog" aria-labelledby="confirmation-title">
+    <form id="confirmation-form" class="dialog-content">
+      <h2 id="confirmation-title"></h2><p id="confirmation-message"></p>
+      <label id="confirmation-phrase-label" hidden><span id="confirmation-phrase-hint"></span><input id="confirmation-phrase" type="text" autocomplete="off"></label>
+      <p id="confirmation-error" class="entry-error" role="alert"></p>
+      <div class="dialog-actions"><button id="confirmation-submit" type="submit" class="button gold-button">Confirm</button><button class="text-button close-dialog" type="button">Cancel</button></div>
+    </form>
+  </dialog>
+  <dialog id="image-dialog" class="image-dialog" aria-labelledby="image-title"><h2 id="image-title" class="visually-hidden">Image preview</h2><button class="icon-button close-dialog image-close" aria-label="Close image">&times;</button><img id="full-image" src="resources/coupon-front.jpeg" alt="Original donation coupon" loading="lazy"></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript><p class="no-script">Please enable JavaScript to use the live announcement and save results.</p></noscript>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

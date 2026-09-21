@@ -1,0 +1,8 @@
+{
+  "name": "sarvajanik-lottery",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test state.test.mjs media.test.mjs presentation.test.mjs"
+  }
+}

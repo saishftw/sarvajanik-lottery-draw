@@ -1,0 +1,93 @@
+/* Reference-inspired materials are deliberately confined to this gallery. */
+#vehicle-overview .vehicle-group-heading h2 {
+  color: #f0d399;
+  text-shadow: 0 2px 1px #281005;
+}
+
+#vehicle-overview .vehicle-tile {
+  filter: drop-shadow(0 5px 9px #20080c55);
+}
+
+#vehicle-overview .vehicle-tile-surface {
+  border-color: #d1a14d;
+  border-width: 2px;
+  box-shadow: inset 0 1px 1px #fff2c2, inset 0 -2px 1px #86501c;
+}
+
+#vehicle-overview .vehicle-tile-surface::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 3px;
+  border: 1px solid #d9b57199;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+#vehicle-overview .vehicle-tile[data-prize-tier="1"] .vehicle-tile-surface {
+  border-color: #f4d17e;
+}
+
+#vehicle-overview .vehicle-tile[data-prize-tier="1"] .vehicle-tile-surface::after {
+  padding: 3px;
+}
+
+#vehicle-overview .vehicle-tile:hover .vehicle-tile-surface {
+  border-color: #fff0b9;
+}
+
+#vehicle-overview .prize-caption {
+  position: relative;
+  background: #43121a url("artwork/brocade.svg") center / 160px 160px;
+  border-top: 2px solid #c9963f;
+  box-shadow: inset 0 1px 0 #f9dea277, inset 0 -2px 4px #1c060b80;
+}
+
+#vehicle-overview .prize-caption-name {
+  color: #fff4dc;
+  text-shadow: 0 2px 2px #1b060a;
+}
+
+#vehicle-overview .prize-caption-amount {
+  color: #f4d38d;
+  text-shadow: 0 1px 2px #1b060a;
+}
+
+#vehicle-overview .prize-medallion {
+  --metal-light: #fff1b8;
+  --metal-mid: #e7b75a;
+  --metal-dark: #ad7225;
+  background:
+    radial-gradient(ellipse at 28% 18%, #fffbe4b3, transparent 43%),
+    linear-gradient(135deg, var(--metal-light), var(--metal-mid) 43%, var(--metal-dark) 77%, var(--metal-light));
+  border-color: #ffe7a6;
+  color: #381e0a;
+  font-weight: bold;
+  text-shadow: 0 1px 0 #fff0c3;
+  box-shadow: inset 0 2px 1px #fff4c8, inset 0 -2px 2px #815019, 0 4px 7px #26100b66;
+}
+
+#vehicle-overview .prize-medallion::after {
+  border-color: #916125;
+  box-shadow: 0 1px 0 #fff2c5b3;
+}
+
+#vehicle-overview .prize-medallion[data-tier="2"] {
+  --metal-light: #fff0cc;
+  --metal-mid: #dec398;
+  --metal-dark: #aa8652;
+}
+
+#vehicle-overview .prize-medallion[data-tier="3"] {
+  --metal-light: #f3cf96;
+  --metal-mid: #d4a267;
+  --metal-dark: #9b602c;
+}
+
+#vehicle-overview .prize-tab {
+  background: linear-gradient(125deg, #fff0bc, #e7bd6b 37%, #f6dc9a 57%, #c58a39);
+  border-color: #f0c878;
+  color: #3b210c;
+  text-shadow: 0 1px 0 #fff0c2;
+  box-shadow: inset 0 1px 0 #fff5d2, inset 0 -2px 1px #98601f;
+}

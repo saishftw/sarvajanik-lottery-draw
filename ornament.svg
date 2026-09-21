@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <g stroke="#ddbb72" stroke-width="1.8">
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(45 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(90 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(135 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(180 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(225 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(270 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <path d="M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z" transform="rotate(315 50 50)" fill="#ddbb72" fill-opacity=".2"/>
+    <circle cx="50" cy="50" r="8" fill="#ddbb72"/>
+    <circle cx="50" cy="50" r="46" stroke-opacity=".5"/>
+  </g>
+</svg>
