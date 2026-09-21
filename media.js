@@ -10,7 +10,7 @@ export const VEHICLE_IMAGES = {
   'honda-elevate': 'vehicles/Honda Elevate VX MT.jpg',
   'suzuki-victoris': 'vehicles/Maruti Suzuki Victoris VXI.avif',
   'renault-duster': 'vehicles/Renault Duster Evolution MT.avif',
-  'skoda-kylaq': 'vehicles/S\u030ckoda Kylaq Classic 1.0 TSI.webp',
+  'skoda-kylaq': 'vehicles/\u0160koda Kylaq Classic 1.0 TSI.webp',
   'suzuki-fronx': 'vehicles/Maruti Suzuki Fronx ISS Delta 1.2L AGS ESP.jpeg',
   'suzuki-dzire': 'vehicles/Maruti Suzuki Dzire VXI.webp',
   'hyundai-nios': 'vehicles/Hyundai Grand i10 NIOS Sportz AMT.jpg',

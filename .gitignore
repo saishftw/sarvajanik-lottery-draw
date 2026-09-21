@@ -1,0 +1,13 @@
+# macOS / OS junk
+.DS_Store
+
+# Screenshots — not part of the deployed app
+screenshots/
+
+# Media not referenced by the app (kept locally, excluded from the repo and deploy)
+resources/ganesh-02.jpeg
+resources/ganesh-video-02.mp4
+resources/ganesh-video-03.mp4
+resources/lottery-prize-template-01.jpeg
+resources/lottery-prize-template-02.jpeg
+vehicles/Vida VX2 Plus.png
