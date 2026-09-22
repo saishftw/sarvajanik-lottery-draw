@@ -43,12 +43,39 @@ test('past-winner crops retain all twenty records inside the original poster', (
   }
 });
 
-test('readable sponsor groups remain inside the original coupon artwork', () => {
-  assert.equal(SPONSOR_PANELS.length, 19);
-  for (const {label, crop: [x, y, width, height]} of SPONSOR_PANELS) {
-    assert.ok(label.length > 0 && x >= 0 && y >= 0 && width > 0 && height > 0);
-    assert.ok(x + width <= 1600 && y + height <= 815);
+test('supporter panels stay inside their own artwork and resolve to local files', async () => {
+  assert.equal(SPONSOR_PANELS.length, 21);
+  for (const panel of SPONSOR_PANELS) {
+    const {label, source, width, height, caption, printed, title, titleColour} = panel;
+    assert.ok(label.length > 0);
+    if (source) {
+      const [x, y, cropWidth, cropHeight] = panel.crop;
+      assert.ok(x >= 0 && y >= 0 && cropWidth > 0 && cropHeight > 0);
+      assert.match(source, /^resources\/(supporters\/)?[^/]+\.(png|jpe?g|webp)$/);
+      assert.ok(x + cropWidth <= width && y + cropHeight <= height, label);
+      assert.ok((await stat(new URL(source, import.meta.url))).isFile(), source);
+    } else {
+      // Lettering-only panels are set in type, so they need a title and its printed colour.
+      assert.ok(title && /^#[a-f0-9]{6}$/i.test(titleColour), label);
+    }
+    if (caption) assert.ok(caption.length === 2 && caption.every(line => typeof line === 'string' && line.length > 0), label);
+    if (printed) assert.ok(printed.length > 0 && printed.every(line => typeof line === 'string' && line.length > 0), label);
+    if (panel.mark) {
+      // A mark is a silhouette recoloured to the title's ink, so it only belongs to lettering panels.
+      assert.ok(!source && /^#[a-f0-9]{6}$/i.test(titleColour), label);
+      const [markX, markY, markWidth, markHeight] = panel.mark.crop;
+      assert.match(panel.mark.source, /^resources\/supporters\/[^/]+\.(png|webp)$/);
+      assert.ok(markX >= 0 && markY >= 0 && markWidth > 0 && markHeight > 0, label);
+      assert.ok(markX + markWidth <= panel.mark.width && markY + markHeight <= panel.mark.height, label);
+      assert.ok((await stat(new URL(panel.mark.source, import.meta.url))).isFile(), panel.mark.source);
+    }
   }
+  const supplied = SPONSOR_PANELS.filter(panel => panel.source?.startsWith('resources/supporters/'));
+  assert.equal(supplied.length, 18);
+  // Only photographs without printed lettering carry a caption.
+  assert.deepEqual(SPONSOR_PANELS.filter(panel => panel.caption).map(panel => panel.label), ['Shri Deepak Prabhu Pauskar', 'Shri Rupesh Ramnath Dessai']);
+  assert.deepEqual(SPONSOR_PANELS.filter(panel => !panel.source).map(panel => panel.label), ['Rajesh Kudalkar', 'Sai Opticians, Panaji']);
+  assert.deepEqual(SPONSOR_PANELS.filter(panel => panel.mark).map(panel => panel.label), ['Sai Opticians, Panaji']);
 });
 
 test('the supplied identity and transparent title crop are preserved as local PNG assets', async () => {

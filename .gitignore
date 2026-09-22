@@ -1,8 +1,15 @@
 # macOS / OS junk
 .DS_Store
 
+# Installed packages
+node_modules/
+
 # Screenshots — not part of the deployed app
 screenshots/
+
+# Local diagnostic and screenshot scripts, not part of the deployed app
+diag*.mjs
+shot*.mjs
 
 # Media not referenced by the app (kept locally, excluded from the repo and deploy)
 resources/ganesh-02.jpeg
@@ -11,3 +18,5 @@ resources/ganesh-video-03.mp4
 resources/lottery-prize-template-01.jpeg
 resources/lottery-prize-template-02.jpeg
 vehicles/Vida VX2 Plus.png
+resources/supporters/glasses.webp
+resources/supporters/koda Kushaq Signature MT.webp

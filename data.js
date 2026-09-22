@@ -88,6 +88,27 @@ export const MANDAL_PERSONNEL = Object.freeze([
   }),
 ]);
 
+// Read out and printed on the results sheet as the official record of who witnessed the draw.
+export const DRAW_WITNESSES = Object.freeze([
+  Object.freeze({ name: 'Shri. Viraj Malkani', role: 'Mamlatdar, Sanguem - Goa' }),
+  Object.freeze({
+    name: 'Shri. Nilesh Rane',
+    role: 'Deputy Superintendent of Police, Canacona - Goa',
+  }),
+  Object.freeze({
+    name: 'Shri. Devidas Borkar',
+    role: 'Executive Engineer, DDW Fatorda, Margao - Goa',
+  }),
+  Object.freeze({
+    name: 'Shri. Yatin Naik',
+    role: 'Assistant Engineer, Sub Div. 2 Ward 22 PWD Fatorda, Margao - Goa',
+  }),
+  Object.freeze({
+    name: 'Mrs. Manisha Upadhyay',
+    role: 'Principal, CTN Higher Secondary School, Curchorem - Goa',
+  }),
+]);
+
 const prizesById = new Map(PRIZES.map((prize) => [prize.id, prize]));
 
 export function prizeById(id) {

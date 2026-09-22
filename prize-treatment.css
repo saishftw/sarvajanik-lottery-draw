@@ -81,9 +81,6 @@
 .results-grid .cell-value { display: flex; align-items: center; justify-content: flex-end; padding: 0 clamp(4px, .6vw, 12px); }
 .result-cell.saved .result-surface { background: var(--ivory); border-color: var(--gold); }
 .result-cell:hover .result-surface { border-color: #ffe3a4; }
-.result-cell[data-prize-tier="1"] .result-surface,
-.result-cell[data-prize-tier="2"] .result-surface,
-.result-cell[data-prize-tier="3"] .result-surface { border-color: var(--gold); border-width: 2px; }
 .results-grid .result-surface > .prize-marker { --marker-size: min(3.4vh, 30px); font-size: min(1.9vh, 16px); }
 .results-grid .result-surface > .prize-tab { min-width: min(4.4vh, 38px); min-height: min(2.9vh, 24px); padding: 2px 4px; font-size: min(1.8vh, 15px); }
 /* A circle this small cannot hold "1st" legibly, so the board gives the top three the tab shape. */

@@ -1,0 +1,66 @@
+@charset "UTF-8";
+
+/* Light theme for the draw screen. The ground turns to warm beige with dark type, and the
+   burgundy moves onto the plates that carry numbers: the digit panels, the prize nameplate
+   and the saved result cells. The data-screen guard keeps the theme off the other screens,
+   so the toggle can stay on without touching Welcome, Prizes or the winner gallery. */
+
+.light-draw[data-screen="draw"] {
+  --ivory: #3d1418;
+  --gold: #8a5a1f;
+  --muted: #6f5140;
+  --line: #b58a5f80;
+  --plate: #601b20;
+  --plate-text: #fff3dd;
+  --prize-nameplate: #601b20;
+  color: #3d1418;
+  /* The weave is drawn in pale gold, so on beige it is multiplied into the ground rather than
+     laid over it; that keeps the same pattern as the dark theme without a second asset. */
+  background:
+    url("artwork/weave.svg") center / 190px 190px,
+    radial-gradient(ellipse at 50% 38%, #fffbf2, transparent 60%),
+    linear-gradient(150deg, #eddfc2, #f4e7d1 52%, #e7d4b4);
+  background-blend-mode: multiply, normal, normal;
+}
+/* The ornament and weave are drawn in pale gold, which disappears on a light ground. */
+.light-draw[data-screen="draw"]::before,
+.light-draw[data-screen="draw"]::after { opacity: .16; filter: brightness(.42) saturate(1.7); }
+
+.light-draw[data-screen="draw"] select { background: #fffaf0; color: var(--ivory); }
+.light-draw[data-screen="draw"] .icon-button:hover { background: #00000010; }
+.light-draw[data-screen="draw"] .gold-button { background: var(--plate); color: var(--plate-text); border-color: var(--plate); }
+.light-draw[data-screen="draw"] .gold-button:hover:not(:disabled) { background: #7e2a2d; border-color: #7e2a2d; }
+.light-draw[data-screen="draw"] .outline-button { color: var(--ivory); border-color: #a8784c; }
+.light-draw[data-screen="draw"] .entry-error { color: #9c2f12; }
+.light-draw[data-screen="draw"] kbd { border-color: #a8784c7a; }
+
+/* The announcement reads as a sheet of paper laid on the beige ground. */
+.light-draw[data-screen="draw"] .announcement { background: linear-gradient(165deg, #fffaf0b8, #f6e8d199); }
+.light-draw[data-screen="draw"] .active-prize-info { color: var(--plate-text); }
+.light-draw[data-screen="draw"] .active-prize .prize-amount { color: #e9c689; }
+
+/* Burgundy carries the winning number. */
+.light-draw[data-screen="draw"] .digit-field .digit-panel { --digit-paper: var(--plate); color: var(--plate-text); }
+.light-draw[data-screen="draw"] .digit-field.confirmed .digit-panel { --digit-paper: #7a242a; }
+.light-draw[data-screen="draw"] .digit-panel.empty { color: #ffffff47; }
+.light-draw[data-screen="draw"] .digit-panel.active::after { background: var(--gold); }
+
+/* A confirmed result fills in as a burgundy plate, so the board shows progress at a glance. */
+.light-draw[data-screen="draw"] .result-surface { background: #ffffff5e; }
+.light-draw[data-screen="draw"] .cell-digit { border-color: #a8784c8c; background: #ffffff66; }
+.light-draw[data-screen="draw"] .result-cell.saved .result-surface { background: var(--plate); color: var(--plate-text); border-color: var(--plate); }
+.light-draw[data-screen="draw"] .result-cell.saved .cell-digit { border-color: #ffffff59; background: #ffffff21; color: var(--plate-text); }
+.light-draw[data-screen="draw"] .result-cell.saved .result-money { color: #e9c689; }
+.light-draw[data-screen="draw"] .result-cell:hover .result-surface { border-color: #8a5a1f; }
+
+/* The rail and the prize nameplate are burgundy plates, so their type stays cream. */
+.light-draw[data-screen="draw"] .recent-results .recent-result { background: var(--plate); color: var(--plate-text); border-color: #8a5a1f66; }
+.light-draw[data-screen="draw"] .recent-result:hover { background: #6d2026; border-color: var(--gold); }
+.light-draw[data-screen="draw"] .prize-caption { color: var(--plate-text); border-top-color: #ffffff2b; }
+.light-draw[data-screen="draw"] .prize-caption-amount { color: #e9c689; }
+/* Anything sitting on burgundy keeps the bright gold, which the darkened brass cannot match there. */
+.light-draw[data-screen="draw"] .prize-tab { color: var(--plate-text); }
+.light-draw[data-screen="draw"] .prize-marker,
+.light-draw[data-screen="draw"] .active-prize-info,
+.light-draw[data-screen="draw"] .recent-results .recent-result,
+.light-draw[data-screen="draw"] .result-cell.saved .result-surface { --gold: #ddbb72; }

@@ -1,4 +1,4 @@
-import {EVENT, PRIZES, GROUPS, COUPON_FORMAT, DRAW_ORDER, MANDAL_PERSONNEL, prizeById} from './data.js';
+import {EVENT, PRIZES, GROUPS, COUPON_FORMAT, DRAW_ORDER, MANDAL_PERSONNEL, DRAW_WITNESSES, prizeById} from './data.js';
 import {
   createState, loadState, saveState, storageKey, updateDraft, commitResult,
   getDuplicates, updateSettings, serializeBackup, parseBackup, recoverState,
@@ -26,6 +26,7 @@ let editing = false;
 let pendingSubmission = false;
 let overview = false;
 let focusMode = false;
+let lightDraw = false;
 let showcase = 'all';
 let prizePage = 0;
 let sponsorPage = 0;
@@ -143,8 +144,29 @@ function sourceCrop(source, width, height, crop, title, vehicleImage = false) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${crop[2]} ${crop[3]}" role="img" aria-label="${escape(title)}"><svg viewBox="${crop.join(' ')}" width="${crop[2]}" height="${crop[3]}" overflow="hidden"><image href="${escape(source)}" width="${width}" height="${height}"${vehicleImage ? ' data-vehicle-image' : ''}/></svg></svg>`;
 }
 
-function pager(page, total, prefix, playing) {
-  return `<span>${String(page + 1).padStart(2, '0')} <span aria-hidden="true">/</span> ${String(total).padStart(2, '0')}</span><div class="page-controls"><button data-action="${prefix}-previous" aria-label="Previous ${prefix} page">&larr;</button><button class="pause-button" data-action="${prefix}-rotate" aria-pressed="${playing}">${playing ? 'Pause rotation' : 'Auto-play'}</button><button data-action="${prefix}-next" aria-label="Next ${prefix} page">&rarr;</button></div>`;
+// A silhouette mark keeps only its alpha, so one colour matrix repaints it in the supporter's ink.
+function tintedCrop(mark, colour, label) {
+  const [x, y, width, height] = mark.crop;
+  const id = `mark-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  const channels = [1, 3, 5].map(offset => (parseInt(colour.slice(offset, offset + 2), 16) / 255).toFixed(4));
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="presentation" aria-hidden="true"><filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 ${channels[0]} 0 0 0 0 ${channels[1]} 0 0 0 0 ${channels[2]} 0 0 0 1 0"/></filter><svg viewBox="${mark.crop.join(' ')}" width="${width}" height="${height}" overflow="hidden"><image href="${escape(mark.source)}" width="${mark.width}" height="${mark.height}" filter="url(#${id})"/></svg></svg>`;
+}
+
+// Supporter panels combine supplied artwork with the lettering printed alongside it on the coupon.
+function sponsorCard(panel) {
+  const art = panel.source
+    ? sourceCrop(panel.source, panel.width, panel.height, panel.crop, panel.label)
+    : '';
+  const mark = panel.mark ? `<span class="sponsor-mark">${tintedCrop(panel.mark, panel.titleColour, panel.label)}</span>` : '';
+  const title = panel.title ? `<p class="sponsor-title">${escape(panel.title)}</p>` : '';
+  const printed = panel.printed ? `<p class="sponsor-printed">${panel.printed.map(line => `<span>${escape(line)}</span>`).join('')}</p>` : '';
+  // A printed line sits inside the frame, so those panels leave it room; a caption sits below
+  // the frame and the photograph simply takes whatever height is left.
+  const sizing = panel.source ? `--art-width:${panel.crop[2]}px;--art-ratio:${(panel.crop[2] / panel.crop[3]).toFixed(3)}${panel.printed ? ';--art-height:46vh' : ''}` : `--supporter-accent:${panel.titleColour};--title-length:${panel.title.length}`;
+  return `<div class="sponsor-art${panel.source ? '' : ' sponsor-lettering'}" style="${sizing}">${art}${mark}${title}${printed}</div>`;
+}
+
+function pager(page, total, prefix, playing) {  return `<span>${String(page + 1).padStart(2, '0')} <span aria-hidden="true">/</span> ${String(total).padStart(2, '0')}</span><div class="page-controls"><button data-action="${prefix}-previous" aria-label="Previous ${prefix} page">&larr;</button><button class="pause-button" data-action="${prefix}-rotate" aria-pressed="${playing}">${playing ? 'Pause rotation' : 'Auto-play'}</button><button data-action="${prefix}-next" aria-label="Next ${prefix} page">&rarr;</button></div>`;
 }
 
 const showcasePrizes = [...PRIZES.filter(prize => prize.category === 'cars'), PRIZES[15], PRIZES[20], PRIZES[25], PRIZES[30]];
@@ -177,7 +199,8 @@ function renderShowcase() {
     $('#prize-pagination').innerHTML = pager(prizePage, showcasePrizes.length, 'prize', rotatePrizes);
   } else if (showcase === 'sponsors') {
     const panel = SPONSOR_PANELS[sponsorPage];
-    $('#sponsor-showcase').innerHTML = `<div class="sponsor-art" style="--art-width:${panel.crop[2]}px;--art-ratio:${(panel.crop[2] / panel.crop[3]).toFixed(3)}">${sourceCrop('resources/coupon-back.jpeg', 1600, 815, panel.crop, panel.label)}</div>`;
+    const caption = panel.caption ? `<p class="sponsor-caption"><strong>${escape(panel.caption[0])}</strong>${escape(panel.caption[1])}</p>` : '';
+    $('#sponsor-showcase').innerHTML = `${sponsorCard(panel)}${caption}`;
     $('#prize-pagination').innerHTML = pager(sponsorPage, SPONSOR_PANELS.length, 'prize', rotatePrizes);
   } else if (showcase === 'all') {
     renderVehicleOverview();
@@ -257,7 +280,8 @@ function cellValue(prize) {
 function renderMandalStrip() {
   // The strip has one line per person, so the longer coupon roles lose their "Donation" prefix.
   const role = person => person.role.replace(/^Donation /, '');
-  $('#mandal-strip').innerHTML = `<p class="collection-notice">Prizes must be collected strictly within 30 days from date of draw</p><ul class="mandal-contacts">${MANDAL_PERSONNEL.map(person => `<li><span class="mandal-name">Shri. ${escape(person.name)}</span><span class="mandal-meta"><span class="mandal-role">${escape(role(person))}</span><span class="mandal-sep" aria-hidden="true">\u25c6</span><span class="mandal-phone">${escape(person.phone)}</span></span></li>`).join('')}</ul>`;
+  const witnesses = `<div class="witness-row"><p class="strip-heading">Draw held in the presence of</p><ol class="draw-witnesses">${DRAW_WITNESSES.map(person => `<li><span class="witness-name">${escape(person.name)}</span><span class="witness-role">${escape(person.role)}</span></li>`).join('')}</ol></div>`;
+  $('#mandal-strip').innerHTML = `${witnesses}<p class="collection-notice">Prizes must be collected strictly within 30 days from date of draw</p><ul class="mandal-contacts">${MANDAL_PERSONNEL.map(person => `<li><span class="mandal-name">Shri. ${escape(person.name)}</span><span class="mandal-meta"><span class="mandal-role">${escape(role(person))}</span><span class="mandal-sep" aria-hidden="true">\u25c6</span><span class="mandal-phone">${escape(person.phone)}</span></span></li>`).join('')}</ul>`;
 }
 
 function renderResults() {
@@ -750,6 +774,14 @@ $('#focus-button').addEventListener('click', () => {
   $('#screen-draw').classList.toggle('focus-mode', focusMode);
   $('#focus-button').textContent = focusMode ? 'Show recent results' : 'Expand number';
   $('#focus-button').setAttribute('aria-pressed', String(focusMode));
+});
+$('#light-button').addEventListener('click', () => {
+  lightDraw = !lightDraw;
+  $('#app').classList.toggle('light-draw', lightDraw);
+  const label = lightDraw ? 'Dark theme' : 'Light theme';
+  $('#light-button').setAttribute('aria-label', label);
+  $('#light-button').setAttribute('title', label);
+  $('#light-button').setAttribute('aria-pressed', String(lightDraw));
 });
 $('#sound-button').addEventListener('click', enableSound);
 $('#motion-button').addEventListener('click', () => {

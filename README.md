@@ -7,12 +7,14 @@ A self-contained static presentation for the 25 September 2026 Mahaprasad Pavti 
 From the project folder:
 
 ```sh
-python3 -m http.server 4286 --bind 127.0.0.1
+npm start
 ```
 
-Open **http://127.0.0.1:4286**. Keep the terminal running. The same folder can also be deployed on a static host.
+Open **http://127.0.0.1:4286**. Keep the terminal running. `npm start` takes an optional port, as in `npm start -- 8123`. The same folder can also be deployed on a static host.
 
-Use the same hostname, port, browser, and browser profile for the entire event. `localhost`, `127.0.0.1`, different ports, and a hosted website have separate browser storage. Do not use a private browsing window or open `index.html` with `file://`.
+The bundled `serve.py` marks every response `no-store`. Plain `python3 -m http.server` sends no cache directives, so a browser reuses old ES modules after an edit and reports a fresh export as missing; if that happens, hard-refresh the page.
+
+Use the same hostname, port, browser, and browser profile for the entire event. `localhost`, `127.0.0.1`, different ports, and a hosted website have separate browser storage. Do not use a private browsing window or open `index.html` with `file://`, which blocks the modules and leaves only the welcome screen with nothing clickable.
 
 ## Present
 
@@ -35,7 +37,8 @@ Use the same hostname, port, browser, and browser profile for the entire event. 
 - Repeat numbers trigger an explicit warning across all prizes, including repeats between a book prize and a vehicle prize. Only override it when the actual draw rules permit repeat winners.
 - **Correct result** preserves the original confirmed value until the correction is saved. Previous values remain in the JSON correction history.
 - **All results** shows three pages of fifteen results. It does not lose the current draft. Select a result to return to that prize.
-- **Expand number** hides the results sidebar. Settings has an LED safe-margin adjustment. Browser reduced-motion preferences are respected.
+- The bottom credit strip carries the five witnessing officials above the collection notice and the five Mandal contacts, so the public record of who the draw was held before stays on screen in both the live entry view and the All results board. `DRAW_WITNESSES` in `data.js` owns the names and designations; edit that list to change them.
+- **Expand number** hides the results sidebar. The **sun/moon icon** beside it turns the draw screen to a beige ground with dark type, moving the burgundy onto the plates that carry numbers: the digit panels, the prize nameplate, the recent-results rail and each confirmed cell on the board. It is useful when the hall is bright or the projector washes out a dark screen. The icon shows the theme it switches to. The toggle affects the draw screen only, so Welcome, Prizes and the winner gallery keep their dark presentation even while it is on. It resets to dark on reload. Settings has an LED safe-margin adjustment. Browser reduced-motion preferences are respected.
 - **Settings > Pause motion** immediately stops ambient flower rotations, the first-prize frame sheen, the welcome video, and celebrations. A playing welcome video freezes on its current frame. Decorative motion and video pause in hidden screens/background tabs, and the ornament behind the number pauses during input. Confirmed digits never animate on a loop.
 - **Settings > Sound effects** toggles locally synthesized entry/confirmation sounds immediately. Sound is opt-in on each page load; the welcome video's audio remains muted. Set volume and save the other settings before the event. Top-three celebrations follow a successful save.
 
@@ -47,7 +50,7 @@ Confirmed numbers and drafts are saved to local storage. This is not cloud sync 
 
 - **Settings > Download JSON backup** saves editable results, drafts, settings, and correction history.
 - **Restore backup** validates the event and record type, requires typing `RESTORE 2026`, and downloads the current record before replacement. A rehearsal backup cannot be imported into the live event.
-- The **download icon** beside **Save all results** exports the current results page as a PNG. The all-results export is a tall shareable record. These are purpose-built images with confirmed numbers and printed cash components, not screenshots. Drafts are excluded; rehearsal exports are clearly labelled.
+- The **download icon** beside **Save all results** exports the current results page as a PNG. The all-results export is a landscape sheet: one column per prize group side by side, so all 45 results are read at a glance rather than scrolled down a tall strip. The five witnessing officials are credited across its foot. These are purpose-built images with confirmed numbers and printed cash components, not screenshots. Drafts are excluded; rehearsal exports are clearly labelled.
 - **Reset saved numbers** requires typing `RESET 2026` and downloads the previous stored record first. It affects only the selected record.
 - Malformed data, storage write failures, and changes from another window block further announcements. They never silently discard or replace the stored record. Back up unreadable data before deliberately resetting it. After a normal storage conflict, reload to review the current saved data.
 - A damaged record can still be selected for backup/recovery, and does not prevent switching to the healthy record. Damaged presentation preferences have a separate **Reset presentation options only** action which leaves both draw records untouched.
@@ -78,7 +81,13 @@ The results board deliberately contains prize numbers, model names and winning n
 
 ## Welcome video and resources
 
-The original event images and supplied video files live in `resources/`. Vehicle images remain in `vehicles/`, and the extracted Marathi title remains in `artwork/`. Image, sponsor-crop and full-size-view paths all use those locations.
+The original event images and supplied video files live in `resources/`. Supporter artwork supplied by the supporters themselves lives in `resources/supporters/`. Vehicle images remain in `vehicles/`, and the extracted Marathi title remains in `artwork/`. Image, sponsor-crop and full-size-view paths all use those locations.
+
+Each entry in `SPONSOR_PANELS` (`media.js`) names its own `source`, source `width`/`height` and the `crop` window shown on the Supporters page. Three optional fields carry the lettering printed on the coupon: `caption` (a name and role for photographs with no lettering of their own), `printed` (lines set inside the card beside a logo, such as a phone number or tagline) and `title` with `titleColour` for lettering-only supporters. A lettering-only panel may also take a `mark`: supplied artwork cropped to a silhouette and recoloured to the title's own ink, so it reads as part of the type rather than a pasted-in logo. Sai Opticians uses one — a full spectacle frame set above the name in the same blue, cropped to the artwork's own ink so no transparent padding is carried into the card. Of the twenty-one panels, eighteen supporters use their own artwork, Rajesh Kudalkar and Sai Opticians are set in type rather than enlarged from a soft crop, and only Bandekar Offset is still cut from the printed coupon back (`resources/coupon-back.jpeg`). To swap that one in, drop the file in `resources/supporters/` and point its panel at the new source and crop.
+
+One file is derived, with the supplied source kept beside it: `landmark-mg-goa.png` is a 1600 px rasterisation of `MG Logo 3.5 X 2.5 Cm.pdf`. `sandy-toes-sheet.jpeg` holds the mark in six colours, and the panel crop shows the green one printed on the coupon. `honda.jpeg`, `hero.svg` and `tata.jpeg` are superseded by the later `honda-logo.png`, `hero-logo.png` and `tata-logo.webp`, which the panels use.
+
+Every panel is normalised to one frame so no supporter is shown larger than another: the artwork is scaled to fit a box of 820 px by 52vh (46vh where a printed line shares the card), and lettering-only panels fill a card of the same size. A panel is never enlarged past twice its own crop, which keeps the one remaining coupon crop from being blown up into a soft patch. The beige frame is drawn as the card's border and the artwork sits on white, so logos supplied on a transparent background read the same as the ones supplied on white. A lettering-only name is held to a single line by capping its type against the card's width and the length of the name. The two captioned portraits carry their credit below the photograph, set small and tight on a single line each where it fits, because every line the caption saves is height the portrait takes instead.
 
 The active video is selected in `media.js`:
 

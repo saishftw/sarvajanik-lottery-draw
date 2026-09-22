@@ -59,25 +59,35 @@ export const PREVIOUS_WINNERS = [
   ...Array.from({length: 6}, (_, index) => ({rank: index + 15, crop: [848, 268 + index * 125, 410, 117]})),
 ];
 
-// One supporter per panel, cut on the red rules printed on the coupon back.
+// One supporter per panel. Supporters who supplied original artwork use it; the rest stay
+// cut on the red rules printed on the coupon back until their own artwork arrives.
+// `caption` carries the printed name below panels whose photograph has no lettering of its own,
+// `printed` repeats the lines printed beside a logo, and a panel with only a `title` sets the
+// coupon's lettering in type rather than enlarging a soft crop of it. A lettering-only panel may
+// also carry a `mark`: a silhouette cropped from supplied artwork and recoloured to the title's ink.
+const COUPON_BACK = {source: 'resources/coupon-back.jpeg', width: 1600, height: 815};
+
 export const SPONSOR_PANELS = [
-  {label: 'Shri Deepak Prabhu Pauskar', crop: [70, 46, 205, 147]},
-  {label: 'Jubilant MotorWorks', crop: [279, 46, 206, 147]},
-  {label: 'Emporium Automobiles', crop: [489, 46, 413, 147]},
-  {label: 'Landmark MG Goa', crop: [906, 46, 205, 147]},
-  {label: 'Sharayu Toyota', crop: [1115, 46, 205, 147]},
-  {label: 'Tata', crop: [1324, 46, 205, 147]},
-  {label: 'Shri Sanket Arsekar', crop: [70, 197, 205, 148]},
-  {label: 'Goa Hyundai', crop: [279, 197, 206, 148]},
-  {label: 'Pristine Renault', crop: [489, 197, 622, 148]},
-  {label: 'Hero', crop: [1115, 197, 205, 148]},
-  {label: 'Honda', crop: [1324, 197, 205, 148]},
-  {label: 'Shri Rupesh Ramnath Dessai', crop: [70, 349, 205, 148]},
-  {label: 'Amonkar Caterers', crop: [279, 349, 205, 148]},
-  {label: 'GLCS', crop: [488, 349, 205, 148]},
-  {label: 'Bandekar Offset', crop: [697, 349, 205, 148]},
-  {label: 'Raj Housing', crop: [906, 349, 205, 148]},
-  {label: 'Rajesh Kudalkar', crop: [1115, 349, 205, 148]},
-  {label: 'Sandy Toes', crop: [1324, 349, 205, 148]},
-  {label: 'Sai Opticians, Panaji', crop: [1115, 501, 414, 106]},
+  {label: 'Shri Deepak Prabhu Pauskar', source: 'resources/supporters/deepak-pauskar.jpeg', width: 1066, height: 1600, crop: [60, 40, 950, 1210], caption: ['Shri Deepak Prabhu Pauskar', 'Ex PWD Minister, Government of Goa \u00b7 Ex MLA, Sanvordem constituency']},
+  {label: 'Jubilant MotorWorks', source: 'resources/supporters/jubilant-motorworks.jpeg', width: 554, height: 554, crop: [60, 110, 435, 335]},
+  {label: 'Emporium Automobiles', source: 'resources/supporters/emporium-skoda.jpeg', width: 3594, height: 778, crop: [0, 0, 3594, 778]},
+  {label: 'Landmark MG Goa', source: 'resources/supporters/landmark-mg-goa.png', width: 1600, height: 1142, crop: [90, 180, 1400, 780], printed: ['Call: 9022901940']},
+  {label: 'Sharayu Toyota', source: 'resources/supporters/sharayu-toyota.jpeg', width: 1050, height: 750, crop: [0, 0, 1050, 750]},
+  {label: 'Tata', source: 'resources/supporters/tata-logo.webp', width: 915, height: 915, crop: [44, 137, 828, 646]},
+  {label: 'Shri Sanket Arsekar', source: 'resources/supporters/sanket-arsekar.jpeg', width: 1246, height: 891, crop: [0, 0, 1246, 891]},
+  {label: 'Goa Hyundai', source: 'resources/supporters/goa-hyundai.jpeg', width: 1600, height: 1135, crop: [10, 140, 1580, 960]},
+  {label: 'Pristine Renault', source: 'resources/supporters/pristine-renault.jpeg', width: 1280, height: 306, crop: [0, 0, 1280, 306]},
+  {label: 'Hero', source: 'resources/supporters/hero-logo.png', width: 3840, height: 2160, crop: [200, 620, 3480, 1090]},
+  {label: 'Honda', source: 'resources/supporters/honda-logo.png', width: 1280, height: 861, crop: [0, 0, 1280, 861], printed: ['The Power of Dreams']},
+  {label: 'Shri Rupesh Ramnath Dessai', source: 'resources/supporters/rupesh-dessai.jpeg', width: 1280, height: 960, crop: [240, 0, 820, 960], caption: ['Shri Rupesh Ramnath Dessai', 'Zilla Panchayat, Dharbandora']},
+  {label: 'Amonkar Caterers', source: 'resources/supporters/amonkar-caterers.jpeg', width: 1280, height: 854, crop: [0, 0, 1280, 854]},
+  {label: 'GLCS', source: 'resources/supporters/glcs.jpeg', width: 1440, height: 657, crop: [0, 50, 1420, 570]},
+  {label: 'Bandekar Offset', ...COUPON_BACK, crop: [697, 349, 205, 148]},
+  {label: 'Raj Housing', source: 'resources/supporters/raj-housing.jpeg', width: 1280, height: 867, crop: [10, 60, 1265, 722]},
+  {label: 'Rajesh Kudalkar', title: 'Rajesh Kudalkar', titleColour: '#a33421'},
+  // The supplied sheet repeats the mark in six colours; the green one matches the printed coupon.
+  {label: 'Sandy Toes', source: 'resources/supporters/sandy-toes-sheet.jpeg', width: 1600, height: 646, crop: [467, 44, 466, 200], printed: ['Gogol, Margao - Goa.', '9960272676']},
+  {label: 'Sai Opticians, Panaji', title: 'SAI OPTICIANS', titleColour: '#12489b', mark: {source: 'resources/supporters/sai-opticians-glasses.webp', width: 525, height: 350, crop: [68, 116, 392, 134]}, printed: ['Panaji - Goa.', '9822310722 / 9423307676']},
+  {label: 'A7 Graphics', source: 'resources/supporters/a7-graphics.jpeg', width: 1600, height: 800, crop: [0, 0, 1600, 800]},
+  {label: 'Yes Bank', source: 'resources/supporters/yes-bank.webp', width: 3840, height: 1434, crop: [0, 0, 3840, 1434], printed: ['Official Banking Partner']},
 ];

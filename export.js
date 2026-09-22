@@ -1,4 +1,4 @@
-import {EVENT, GROUPS, PRIZES} from './data.js';
+import {DRAW_WITNESSES, EVENT, GROUPS, MANDAL_PERSONNEL, PRIZES} from './data.js';
 import {validateState} from './state.js';
 import {prizeTier} from './presentation.js';
 
@@ -16,8 +16,8 @@ export function downloadFile(content, filename, type = 'application/json') {
 
 const DEVANAGARI = '"Noto Serif Devanagari", "Kohinoor Devanagari", "Devanagari MN", "Nirmala UI", "Mangal", Georgia, serif';
 const HEADER_HEIGHT = 430;
-const CREST_SPACE = 150;
-const GANESH_MARK = 'artwork/ganesh-icon.png';
+const CREST_SPACE = 225;
+const GANESH_MARK = 'artwork/ganesh-icon-03.png';
 // Path data mirrors artwork/weave.svg and ornament.svg so the sheet draws without extra image requests.
 const WEAVE = [
   'M40 7Q56 25 40 40Q24 25 40 7ZM73 40Q55 56 40 40Q55 24 73 40ZM40 73Q24 55 40 40Q56 55 40 73ZM7 40Q25 24 40 40Q25 56 7 40Z',
@@ -28,6 +28,15 @@ const WEAVE = [
 const PETAL = 'M50 7C61 24 64 33 50 50C36 33 39 24 50 7Z';
 const TIER_ROW_BONUS = 22;
 const TIER_PAPER = ['#fdeaba', '#f7e6cb', '#f2ddc0'];
+// The sheet is laid out in landscape: one column per prize group, side by side.
+const SHEET_MARGIN = 75;
+const COLUMN_WIDTH = 1050;
+const COLUMN_GAP = 55;
+const MIN_SHEET_WIDTH = 1800;
+const ROW_HEIGHT = 90;
+const GROUP_HEADING = 95;
+const WITNESS_GAP = 30;
+const CONTACT_GAP = 24;
 
 function drawWeave(context, width, height, gold) {
   const paths = WEAVE.map(data => new Path2D(data));
@@ -87,19 +96,11 @@ function tracked(context, spacing, draw) {
   context.letterSpacing = '0px';
 }
 
-async function tintedMark(source, colour) {
+async function loadMark(source) {
   const image = new Image();
   image.src = source;
   await image.decode();
-  const mark = document.createElement('canvas');
-  mark.width = image.naturalWidth;
-  mark.height = image.naturalHeight;
-  const context = mark.getContext('2d');
-  context.drawImage(image, 0, 0);
-  context.globalCompositeOperation = 'source-in';
-  context.fillStyle = colour;
-  context.fillRect(0, 0, mark.width, mark.height);
-  return mark;
+  return image;
 }
 
 function drawHeader(context, width, state, {cream, gold, mark}) {
@@ -107,8 +108,8 @@ function drawHeader(context, width, state, {cream, gold, mark}) {
   const centre = width / 2;
   context.save();
   if (mark) {
-    const size = 150;
-    context.drawImage(mark, centre - size / 2, 62, size, size);
+    const size = 240;
+    context.drawImage(mark, centre - size / 2, 36, size, size);
     context.translate(0, CREST_SPACE);
   }
 
@@ -156,20 +157,142 @@ function drawHeader(context, width, state, {cream, gold, mark}) {
   context.restore();
 }
 
+// One result row, drawn relative to its column so the same design reflows into any column width.
+function drawRow(context, prize, result, x, y, columnWidth, {ink, cream, gold}) {
+  const tier = prizeTier(prize);
+  const height = tier ? ROW_HEIGHT + TIER_ROW_BONUS : ROW_HEIGHT;
+  const box = height - 7;
+  const mid = y + box / 2;
+  context.textAlign = 'left';
+  context.fillStyle = tier ? TIER_PAPER[tier - 1] : cream;
+  context.fillRect(x, y, columnWidth, box);
+  if (tier) {
+    context.strokeStyle = gold;
+    context.lineWidth = 3;
+    context.strokeRect(x + 1.5, y + 1.5, columnWidth - 3, box - 3);
+    context.fillStyle = ink;
+    context.beginPath();
+    context.arc(x + 51, mid, 29, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = TIER_PAPER[tier - 1];
+    context.textAlign = 'center';
+    context.font = 'bold 30px Arial';
+    context.fillText(String(prize.rank), x + 51, mid + 11);
+    context.textAlign = 'left';
+  } else {
+    context.fillStyle = ink;
+    context.font = 'bold 30px Arial';
+    context.fillText(String(prize.rank).padStart(2, '0'), x + 27, mid + 10);
+  }
+  context.fillStyle = ink;
+  const name = prize.category === 'books' ? 'Lucky book prize' : prize.name;
+  const limit = columnWidth - 375;
+  let size = tier ? 34 : 29;
+  context.font = `${tier ? 'bold ' : ''}${size}px Arial`;
+  while (context.measureText(name).width > limit && size > 17) context.font = `${tier ? 'bold ' : ''}${--size}px Arial`;
+  context.fillText(name, x + 115, mid + size / 3);
+  context.font = result ? `bold ${tier ? 58 : 46}px Arial` : '26px Arial';
+  context.textAlign = 'right';
+  context.fillText(result ? result.number : 'Not announced', x + columnWidth - 30, mid + (result ? (tier ? 20 : 16) : 9));
+  context.textAlign = 'left';
+  return height;
+}
+
+// The officials are credited across the foot of the sheet, mirroring the strip under the draw screen.
+function drawWitnesses(context, left, right, top, {cream, gold}) {
+  const centre = (left + right) / 2;
+  context.save();
+  context.textAlign = 'center';
+  context.strokeStyle = gold;
+  context.globalAlpha = .45;
+  context.lineWidth = 1;
+  context.beginPath();
+  context.moveTo(left, top);
+  context.lineTo(right, top);
+  context.stroke();
+  context.globalAlpha = 1;
+  context.fillStyle = gold;
+  context.font = '22px Arial';
+  tracked(context, 6, () => context.fillText('DRAW HELD IN THE PRESENCE OF', centre, top + 40));
+
+  const column = (right - left - WITNESS_GAP * (DRAW_WITNESSES.length - 1)) / DRAW_WITNESSES.length;
+  DRAW_WITNESSES.forEach((person, index) => {
+    const middle = left + index * (column + WITNESS_GAP) + column / 2;
+    context.fillStyle = cream;
+    context.font = 'bold 24px Arial';
+    context.fillText(`${index + 1}.  ${person.name}`, middle, top + 88);
+    context.fillStyle = gold;
+    let size = 20;
+    context.font = `${size}px Arial`;
+    while (context.measureText(person.role).width > column && size > 12) context.font = `${--size}px Arial`;
+    context.fillText(person.role, middle, top + 118);
+  });
+  context.restore();
+}
+
+function drawCollectionDetails(context, left, right, top, {cream, gold}) {
+  const centre = (left + right) / 2;
+  const width = right - left;
+  const notice = 'Prizes must be collected strictly within 30 days from date of draw. Retain the original donation coupon for prize claims.';
+  context.save();
+  context.textAlign = 'center';
+  context.strokeStyle = gold;
+  context.lineWidth = 1;
+  context.strokeRect(left, top, width, 52);
+  context.fillStyle = gold;
+  let noticeSize = 21;
+  context.font = `bold ${noticeSize}px Arial`;
+  while (context.measureText(notice).width > width - 36 && noticeSize > 14) {
+    context.font = `bold ${--noticeSize}px Arial`;
+  }
+  context.fillText(notice, centre, top + 34);
+
+  const column = (width - CONTACT_GAP * (MANDAL_PERSONNEL.length - 1)) / MANDAL_PERSONNEL.length;
+  MANDAL_PERSONNEL.forEach((person, index) => {
+    const middle = left + index * (column + CONTACT_GAP) + column / 2;
+    const role = person.role.replace(/^Donation /, '');
+    context.fillStyle = cream;
+    let nameSize = 18;
+    context.font = `bold ${nameSize}px Arial`;
+    const name = `Shri. ${person.name}`;
+    while (context.measureText(name).width > column && nameSize > 12) {
+      context.font = `bold ${--nameSize}px Arial`;
+    }
+    context.fillText(name, middle, top + 91);
+    context.fillStyle = gold;
+    let roleSize = 15;
+    context.font = `${roleSize}px Arial`;
+    while (context.measureText(role).width > column && roleSize > 10) {
+      context.font = `${--roleSize}px Arial`;
+    }
+    context.fillText(role.toUpperCase(), middle, top + 116);
+    context.fillStyle = cream;
+    context.font = '17px Arial';
+    context.fillText(person.phone, middle, top + 142);
+  });
+  context.restore();
+}
+
 export async function exportResults(state, category = null) {
   validateState(state, state.mode);
   await document.fonts.ready;
   const groups = category ? GROUPS.filter(group => group.id === category) : GROUPS;
   if (!groups.length) throw new Error('Choose a valid results category.');
-  const width = 1800;
-  const rowHeight = 90;
-  const groupHeight = 110 + 15 * rowHeight;
   const gold = '#ddbb72';
-  const mark = await tintedMark(GANESH_MARK, gold).catch(() => null);
+  const mark = await loadMark(GANESH_MARK).catch(() => null);
   const headerHeight = HEADER_HEIGHT + (mark ? CREST_SPACE : 0);
+  const prizesOf = group => PRIZES.filter(prize => prize.category === group.id);
+  const bodyHeight = group => prizesOf(group)
+    .reduce((total, prize) => total + (prizeTier(prize) ? ROW_HEIGHT + TIER_ROW_BONUS : ROW_HEIGHT), 0);
+  const blockWidth = groups.length * COLUMN_WIDTH + (groups.length - 1) * COLUMN_GAP;
+  const width = Math.max(MIN_SHEET_WIDTH, SHEET_MARGIN * 2 + blockWidth);
+  const blockLeft = Math.round((width - blockWidth) / 2);
+  const columnsHeight = GROUP_HEADING + Math.max(...groups.map(bodyHeight));
+  const witnessTop = headerHeight + columnsHeight + 46;
+  const collectionTop = witnessTop + 160;
   const canvas = document.createElement('canvas');
   canvas.width = width;
-  canvas.height = headerHeight + groups.length * groupHeight + groups.filter(group => group.id === 'cars').length * 3 * TIER_ROW_BONUS + 120;
+  canvas.height = collectionTop + 220;
   const context = canvas.getContext('2d');
   if (!context) throw new Error('This browser could not create a results image. Download a JSON backup instead.');
   const ink = '#491c1b';
@@ -186,60 +309,20 @@ export async function exportResults(state, category = null) {
   context.strokeRect(48, 48, width - 96, canvas.height - 96);
   context.globalAlpha = 1;
   drawHeader(context, width, state, {cream, gold, mark});
-  let y = headerHeight;
   context.textAlign = 'left';
-  for (const group of groups) {
+  groups.forEach((group, index) => {
+    const x = blockLeft + index * (COLUMN_WIDTH + COLUMN_GAP);
+    let y = headerHeight;
     context.fillStyle = gold;
     context.font = '38px Georgia';
-    context.fillText(group.label, 85, y + 49);
-    y += 95;
-    const prizes = PRIZES.filter(prize => prize.category === group.id);
-    for (const prize of prizes) {
-      const result = state.results[prize.id];
-      const tier = prizeTier(prize);
-      const height = tier ? rowHeight + TIER_ROW_BONUS : rowHeight;
-      const box = height - 7;
-      const mid = y + box / 2;
-      context.fillStyle = tier ? TIER_PAPER[tier - 1] : cream;
-      context.fillRect(75, y, width - 150, box);
-      if (tier) {
-        context.strokeStyle = gold;
-        context.lineWidth = 3;
-        context.strokeRect(76.5, y + 1.5, width - 153, box - 3);
-        context.fillStyle = ink;
-        context.beginPath();
-        context.arc(126, mid, 29, 0, Math.PI * 2);
-        context.fill();
-        context.fillStyle = TIER_PAPER[tier - 1];
-        context.textAlign = 'center';
-        context.font = 'bold 30px Arial';
-        context.fillText(String(prize.rank), 126, mid + 11);
-        context.textAlign = 'left';
-      } else {
-        context.fillStyle = ink;
-        context.font = 'bold 30px Arial';
-        context.fillText(String(prize.rank).padStart(2, '0'), 102, mid + 10);
-      }
-      context.fillStyle = ink;
-      const name = prize.category === 'books' ? 'Lucky book prize' : prize.name;
-      let size = tier ? 34 : 29;
-      context.font = `${tier ? 'bold ' : ''}${size}px Arial`;
-      while (context.measureText(name).width > 910 && size > 17) context.font = `${tier ? 'bold ' : ''}${--size}px Arial`;
-      context.fillText(name, 190, mid + size / 3);
-      context.font = result ? `bold ${tier ? 58 : 46}px Arial` : '26px Arial';
-      context.textAlign = 'right';
-      context.fillText(result ? result.number : 'Not announced', width - 105, mid + (result ? (tier ? 20 : 16) : 9));
-      context.textAlign = 'left';
-      y += height;
+    context.fillText(group.label, x + 10, y + 49);
+    y += GROUP_HEADING;
+    for (const prize of prizesOf(group)) {
+      y += drawRow(context, prize, state.results[prize.id], x, y, COLUMN_WIDTH, {ink, cream, gold});
     }
-    y += 15;
-  }
-  context.font = '21px Arial';
-  context.fillStyle = cream;
-  context.fillText('Confirmed numbers only. Retain the original donation coupon for prize claims.', 85, y + 39);
-  context.fillStyle = gold;
-  context.font = '19px Arial';
-  context.fillText(`Snapshot: ${new Date().toLocaleString('en-IN')}  |  Record revision ${state.revision}`, 85, y + 75);
+  });
+  drawWitnesses(context, blockLeft, blockLeft + blockWidth, witnessTop, {cream, gold});
+  drawCollectionDetails(context, blockLeft, blockLeft + blockWidth, collectionTop, {cream, gold});
   const blob = await new Promise((resolve, reject) => {
     canvas.toBlob(value => value ? resolve(value) : reject(new Error('Image export failed. Download a JSON backup and try again.')), 'image/png');
   });
