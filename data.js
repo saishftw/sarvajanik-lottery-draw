@@ -73,11 +73,11 @@ export const DRAW_ORDER = Object.freeze([
 ]);
 
 export const MANDAL_PERSONNEL = Object.freeze([
-  Object.freeze({ name: 'Vasudev V. Sahakari', role: 'President', phone: '9850484293' }),
+  Object.freeze({ name: 'Vasudev Vithal Sahakari', role: 'President', phone: '9850484293' }),
   Object.freeze({ name: 'Shirish M. Naik', role: 'Secretary', phone: '9604665213' }),
   Object.freeze({ name: 'Narayan V. Salgaonkar', role: 'Treasurer', phone: '9823078313' }),
   Object.freeze({
-    name: 'Sudin P. Kakodkar',
+    name: 'Sudin Pratap Kakodkar',
     role: 'Donation Coupon In-charge',
     phone: '9423307876',
   }),
@@ -90,7 +90,7 @@ export const MANDAL_PERSONNEL = Object.freeze([
 
 // Read out and printed on the results sheet as the official record of who witnessed the draw.
 export const DRAW_WITNESSES = Object.freeze([
-  Object.freeze({ name: 'Shri. Viraj Malkani', role: 'Mamlatdar, Sanguem - Goa' }),
+  Object.freeze({ name: 'Shri. Viraj Malkarni', role: 'Mamlatdar, Sanguem - Goa' }),
   Object.freeze({
     name: 'Shri. Nilesh Rane',
     role: 'Deputy Superintendent of Police, Canacona - Goa',
@@ -104,7 +104,7 @@ export const DRAW_WITNESSES = Object.freeze([
     role: 'Assistant Engineer, Sub Div. 2 Ward 22 PWD Fatorda, Margao - Goa',
   }),
   Object.freeze({
-    name: 'Mrs. Manisha Upadhyay',
+    name: 'Mrs. Manisha Upadhya',
     role: 'Principal, CTN Higher Secondary School, Curchorem - Goa',
   }),
 ]);

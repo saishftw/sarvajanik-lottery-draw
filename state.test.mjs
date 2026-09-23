@@ -97,10 +97,10 @@ test('catalog exports the confirmed event data, personnel, coupon format, and dr
   assert.deepEqual(GROUPS.map(({ id }) => id), ['cars', 'scooters', 'books']);
   assert.deepEqual(COUPON_FORMAT, { digits: 6, min: 0, max: 119999, total: 120000 });
   assert.deepEqual(MANDAL_PERSONNEL, [
-    { name: 'Vasudev V. Sahakari', role: 'President', phone: '9850484293' },
+    { name: 'Vasudev Vithal Sahakari', role: 'President', phone: '9850484293' },
     { name: 'Shirish M. Naik', role: 'Secretary', phone: '9604665213' },
     { name: 'Narayan V. Salgaonkar', role: 'Treasurer', phone: '9823078313' },
-    { name: 'Sudin P. Kakodkar', role: 'Donation Coupon In-charge', phone: '9423307876' },
+    { name: 'Sudin Pratap Kakodkar', role: 'Donation Coupon In-charge', phone: '9423307876' },
     { name: 'Ratish D. Naik', role: 'Donation Coupon Receipt In-charge', phone: '7775808559' },
   ]);
   assert.equal(PRIZES.length, 45);
