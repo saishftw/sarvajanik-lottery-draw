@@ -3,7 +3,7 @@
   --ticket-shape: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
 }
 
-.prize-marker { --marker-size: 48px; display: inline-flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; min-width: var(--marker-size); font: normal 23px/1 var(--serif); color: var(--gold); }
+.prize-marker { --marker-size: 48px; display: inline-flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; min-width: var(--marker-size); font: normal 23px/1 var(--serif); font-variant-numeric: lining-nums; color: var(--gold); }
 .prize-marker-value { position: relative; z-index: 1; white-space: nowrap; }
 .prize-medallion { width: var(--marker-size); height: var(--marker-size); border-radius: 50%; border: 1px solid #ffe9b4; background: #ddbb72; color: var(--ink); box-shadow: 0 3px 8px #25091240; }
 .prize-medallion::after { content: ""; position: absolute; inset: 4px; border: 1px solid #77512985; border-radius: 50%; }
@@ -94,7 +94,7 @@
   background:
     radial-gradient(ellipse at 28% 15%, #fffbe4b3, transparent 46%),
     linear-gradient(135deg, var(--metal-light), var(--metal-mid) 43%, var(--metal-dark) 77%, var(--metal-light));
-  color: #3b210c; font: bold min(1.9vh, 16px) var(--serif); text-shadow: 0 1px 0 #fff0c2;
+  color: #3b210c; font: bold min(1.9vh, 16px) var(--serif); font-variant-numeric: lining-nums; text-shadow: 0 1px 0 #fff0c2;
   box-shadow: inset 0 1px 0 #fff5d2, inset 0 -1px 1px #98601f80, 0 1px 3px #25091240;
 }
 .results-grid .prize-medallion[data-tier="2"] { --metal-light: #fff0cc; --metal-mid: #dec398; --metal-dark: #aa8652; }
@@ -115,7 +115,7 @@
 .recent-number-row .prize-marker { --marker-size: 33px; font-size: 18px; }
 .recent-number-row .prize-tab { min-width: 35px; min-height: 28px; padding: 5px; font-size: 16px; }
 .recent-number-row .prize-medallion[data-tier="1"]::before { width: 16px; height: 16px; top: -7px; }
-.recent-number-row strong { min-width: 0; font-size: min(calc(105cqw / var(--result-digits, 6)), 38px); letter-spacing: .055em; }
+.recent-number-row strong { min-width: 0; font-family: var(--numerals); font-size: min(calc(105cqw / var(--result-digits, 6)), 38px); letter-spacing: .055em; }
 .recent-result .prize-caption { flex-direction: column; align-items: stretch; gap: 4px; padding: 7px 12px; }
 .recent-result .prize-caption-name { font-size: var(--text-control); }
 

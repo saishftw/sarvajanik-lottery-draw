@@ -14,7 +14,10 @@ export function downloadFile(content, filename, type = 'application/json') {
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
-const DEVANAGARI = '"Noto Serif Devanagari", "Kohinoor Devanagari", "Devanagari MN", "Nirmala UI", "Mangal", Georgia, serif';
+const SERIF = '"Gelasio", Georgia, serif';
+const SANS = '"Source Sans 3", "Trebuchet MS", Arial, sans-serif';
+const NUMERALS = '"Lexend", Arial, sans-serif';
+const DEVANAGARI = '"Tiro Devanagari Marathi", "Noto Serif Devanagari", "Kohinoor Devanagari", "Devanagari MN", "Nirmala UI", "Mangal", Georgia, serif';
 const HEADER_HEIGHT = 430;
 const CREST_SPACE = 225;
 const GANESH_MARK = 'artwork/ganesh-icon-03.png';
@@ -114,15 +117,15 @@ function drawHeader(context, width, state, {cream, gold, mark}) {
   }
 
   context.fillStyle = cream;
-  context.font = '50px Georgia';
+  context.font = `50px ${SERIF}`;
   context.fillText(EVENT.name.toUpperCase(), centre, 108);
 
   context.fillStyle = gold;
-  context.font = '23px Arial';
+  context.font = `23px ${SANS}`;
   tracked(context, 7, () => context.fillText(EVENT.location.replace(',', '  \u00b7').toUpperCase(), centre, 148));
 
   const milestones = `ESTD ${EVENT.established}    \u25c6    ${EVENT.celebrationYear}TH YEAR`;
-  context.font = '25px Arial';
+  context.font = `25px ${SANS}`;
   let rule = 0;
   tracked(context, 7, () => {
     context.fillText(milestones, centre, 208);
@@ -147,11 +150,11 @@ function drawHeader(context, width, state, {cream, gold, mark}) {
   drawFlower(context, centre + flank, 270, 46, .8, gold);
 
   context.fillStyle = cream;
-  context.font = 'bold 36px Arial';
+  context.font = `bold 36px ${SANS}`;
   tracked(context, 3, () => context.fillText(`${EVENT.title.toUpperCase()} ${EVENT.year}`, centre, 348));
 
   context.fillStyle = gold;
-  context.font = '24px Arial';
+  context.font = `24px ${SANS}`;
   const count = PRIZES.filter(prize => state.results[prize.id]).length;
   context.fillText(`${EVENT.date}  |  ${state.mode === 'rehearsal' ? 'REHEARSAL - NOT EVENT RESULTS  |  ' : ''}${count} of 45 results confirmed`, centre, 394);
   context.restore();
@@ -176,22 +179,22 @@ function drawRow(context, prize, result, x, y, columnWidth, {ink, cream, gold}) 
     context.fill();
     context.fillStyle = TIER_PAPER[tier - 1];
     context.textAlign = 'center';
-    context.font = 'bold 30px Arial';
+    context.font = `bold 30px ${SANS}`;
     context.fillText(String(prize.rank), x + 51, mid + 11);
     context.textAlign = 'left';
   } else {
     context.fillStyle = ink;
-    context.font = 'bold 30px Arial';
+    context.font = `bold 30px ${SANS}`;
     context.fillText(String(prize.rank).padStart(2, '0'), x + 27, mid + 10);
   }
   context.fillStyle = ink;
   const name = prize.category === 'books' ? 'Lucky book prize' : prize.name;
   const limit = columnWidth - 375;
   let size = tier ? 34 : 29;
-  context.font = `${tier ? 'bold ' : ''}${size}px Arial`;
-  while (context.measureText(name).width > limit && size > 17) context.font = `${tier ? 'bold ' : ''}${--size}px Arial`;
+  context.font = `${tier ? 'bold ' : ''}${size}px ${SANS}`;
+  while (context.measureText(name).width > limit && size > 17) context.font = `${tier ? 'bold ' : ''}${--size}px ${SANS}`;
   context.fillText(name, x + 115, mid + size / 3);
-  context.font = result ? `bold ${tier ? 58 : 46}px Arial` : '26px Arial';
+  context.font = result ? `bold ${tier ? 58 : 46}px ${NUMERALS}` : `26px ${SANS}`;
   context.textAlign = 'right';
   context.fillText(result ? result.number : 'Not announced', x + columnWidth - 30, mid + (result ? (tier ? 20 : 16) : 9));
   context.textAlign = 'left';
@@ -212,19 +215,19 @@ function drawWitnesses(context, left, right, top, {cream, gold}) {
   context.stroke();
   context.globalAlpha = 1;
   context.fillStyle = gold;
-  context.font = '22px Arial';
+  context.font = `22px ${SANS}`;
   tracked(context, 6, () => context.fillText('DRAW HELD IN THE PRESENCE OF', centre, top + 40));
 
   const column = (right - left - WITNESS_GAP * (DRAW_WITNESSES.length - 1)) / DRAW_WITNESSES.length;
   DRAW_WITNESSES.forEach((person, index) => {
     const middle = left + index * (column + WITNESS_GAP) + column / 2;
     context.fillStyle = cream;
-    context.font = 'bold 24px Arial';
+    context.font = `bold 24px ${SANS}`;
     context.fillText(`${index + 1}.  ${person.name}`, middle, top + 88);
     context.fillStyle = gold;
     let size = 20;
-    context.font = `${size}px Arial`;
-    while (context.measureText(person.role).width > column && size > 12) context.font = `${--size}px Arial`;
+    context.font = `${size}px ${SANS}`;
+    while (context.measureText(person.role).width > column && size > 12) context.font = `${--size}px ${SANS}`;
     context.fillText(person.role, middle, top + 118);
   });
   context.restore();
@@ -241,9 +244,9 @@ function drawCollectionDetails(context, left, right, top, {cream, gold}) {
   context.strokeRect(left, top, width, 52);
   context.fillStyle = gold;
   let noticeSize = 21;
-  context.font = `bold ${noticeSize}px Arial`;
+  context.font = `bold ${noticeSize}px ${SANS}`;
   while (context.measureText(notice).width > width - 36 && noticeSize > 14) {
-    context.font = `bold ${--noticeSize}px Arial`;
+    context.font = `bold ${--noticeSize}px ${SANS}`;
   }
   context.fillText(notice, centre, top + 34);
 
@@ -253,21 +256,21 @@ function drawCollectionDetails(context, left, right, top, {cream, gold}) {
     const role = person.role.replace(/^Donation /, '');
     context.fillStyle = cream;
     let nameSize = 18;
-    context.font = `bold ${nameSize}px Arial`;
+    context.font = `bold ${nameSize}px ${SANS}`;
     const name = `Shri. ${person.name}`;
     while (context.measureText(name).width > column && nameSize > 12) {
-      context.font = `bold ${--nameSize}px Arial`;
+      context.font = `bold ${--nameSize}px ${SANS}`;
     }
     context.fillText(name, middle, top + 91);
     context.fillStyle = gold;
     let roleSize = 15;
-    context.font = `${roleSize}px Arial`;
+    context.font = `${roleSize}px ${SANS}`;
     while (context.measureText(role).width > column && roleSize > 10) {
-      context.font = `${--roleSize}px Arial`;
+      context.font = `${--roleSize}px ${SANS}`;
     }
     context.fillText(role.toUpperCase(), middle, top + 116);
     context.fillStyle = cream;
-    context.font = '17px Arial';
+    context.font = `17px ${SANS}`;
     context.fillText(person.phone, middle, top + 142);
   });
   context.restore();
@@ -275,6 +278,8 @@ function drawCollectionDetails(context, left, right, top, {cream, gold}) {
 
 export async function exportResults(state, category = null) {
   validateState(state, state.mode);
+  // Canvas text never triggers a font download, so load the bundled faces the sheet draws with.
+  await Promise.allSettled([`36px ${SANS}`, `bold 36px ${SANS}`, `bold 46px ${NUMERALS}`, `50px ${SERIF}`, `58px ${DEVANAGARI}`].map(font => document.fonts.load(font, 'A0\u0938')));
   await document.fonts.ready;
   const groups = category ? GROUPS.filter(group => group.id === category) : GROUPS;
   if (!groups.length) throw new Error('Choose a valid results category.');
@@ -314,7 +319,7 @@ export async function exportResults(state, category = null) {
     const x = blockLeft + index * (COLUMN_WIDTH + COLUMN_GAP);
     let y = headerHeight;
     context.fillStyle = gold;
-    context.font = '38px Georgia';
+    context.font = `38px ${SERIF}`;
     context.fillText(group.label, x + 10, y + 49);
     y += GROUP_HEADING;
     for (const prize of prizesOf(group)) {

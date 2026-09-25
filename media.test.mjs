@@ -93,6 +93,29 @@ test('the selected welcome loop exists in resources', async () => {
   assert.ok(video.isFile() && video.size > 0);
 });
 
+test('bundled fonts load from local files and every family is declared', async () => {
+  const fonts = await readFile(new URL('fonts.css', import.meta.url), 'utf8');
+  const sources = [...fonts.matchAll(/url\("([^"]+)"\)/g)].map(match => match[1]);
+  assert.ok(sources.length > 0);
+  for (const source of sources) {
+    assert.match(source, /^fonts\/[^/]+\.woff2$/);
+    assert.ok((await stat(new URL(source, import.meta.url))).isFile(), source);
+  }
+  const declared = new Set([...fonts.matchAll(/font-family: "([^"]+)"/g)].map(match => match[1]));
+  assert.deepEqual([...declared].sort(), ['Gelasio', 'Lexend', 'Source Sans 3', 'Tiro Devanagari Marathi']);
+  for (const family of declared) {
+    const licence = `fonts/OFL-${family.toLowerCase().replace(/\s+/g, '')}.txt`;
+    assert.ok((await stat(new URL(licence, import.meta.url))).isFile(), licence);
+  }
+  const html = await readFile(new URL('index.html', import.meta.url), 'utf8');
+  assert.ok(html.indexOf('href="fonts.css"') < html.indexOf('href="styles.css"'), 'fonts.css loads before the stylesheets that use it');
+  // The venue has no internet connection, so nothing may reach for a font CDN.
+  for (const name of ['index.html', 'fonts.css', 'styles.css', 'prizes.css', 'prize-treatment.css', 'all-vehicles.css', 'welcome.css', 'light-draw.css']) {
+    const text = await readFile(new URL(name, import.meta.url), 'utf8');
+    assert.doesNotMatch(text, /fonts\.googleapis|fonts\.gstatic|@import\s+url\(\s*["']?https?:/, name);
+  }
+});
+
 test('static and dynamically cropped artwork resolve after the resources move', async () => {
   const sources = new Set();
   const html = await readFile(new URL('index.html', import.meta.url), 'utf8');

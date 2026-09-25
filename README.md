@@ -110,7 +110,16 @@ For more detail on a large display, re-render from the original high-resolution 
 
 The physical 12 x 8 ft panel is 3:2. Confirm the actual pixel resolution and feed mapping with the LED operator; browser responsiveness cannot fix controller-generated black bars. Use fullscreen, start with the default safe margin, and review digit legibility from the back of the venue. The responsive layouts cover 3:2 and widescreen desktop canvases; phones stack content and allow scrolling.
 
-The numeral panels deliberately use familiar offline Arial digit shapes for distance reading; the ceremonial headings use Georgia. No external font request is required.
+### Typefaces
+
+Every face is bundled in `fonts/` (declared in `fonts.css`, SIL Open Font License), so the venue needs no font download and every laptop renders the same letters. Each face keeps the widths and line heights of the system font it replaced, so layouts did not move.
+
+- **Gelasio** (`--serif`), headings and names. It has Georgia's exact widths, drawn with sturdier strokes. Rank markers use its lining figures, because old-style numerals shrink to lowercase height on a coarse panel.
+- **Source Sans 3** (`--sans`), labels, controls, prize names and amounts. A humanist sans in Trebuchet's spirit with open apertures. It is scaled to Trebuchet's widths, which leaves it an x-height close to Trebuchet's.
+- **Lexend** (`--numerals`), coupon numbers only: digit panels, results rail, board cells and the exported sheet. Its open 3, 6 and 9 and plain zero stay distinct when a digit is only a few LED pixels wide. Slashed or dotted zeros were rejected because they blur towards 8.
+- **Tiro Devanagari Marathi** (`--devanagari`), the invocation and the exported Marathi title. It uses traditional Marathi conjunct forms instead of whichever Devanagari font the operating system supplies.
+
+When adding text, keep it at or above the existing size floors. At a typical 3.9 mm pitch, a 12 ft wall is only about 940 LED pixels across, so a 1920-wide laptop feed is shown at roughly half size. Small print such as the witness roles will not be readable from the audience.
 
 ## State checks
 

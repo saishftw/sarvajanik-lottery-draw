@@ -11,8 +11,10 @@
   --line: #ad7b5366;
   --ink: #491c1b;
   --safe-margin: 2vw;
-  --serif: Georgia, "Times New Roman", serif;
-  --sans: "Trebuchet MS", Arial, sans-serif;
+  --serif: "Gelasio", Georgia, "Tiro Devanagari Marathi", "Times New Roman", serif;
+  --sans: "Source Sans 3", "Trebuchet MS", "Tiro Devanagari Marathi", Arial, sans-serif;
+  --numerals: "Lexend", Arial, sans-serif;
+  --devanagari: "Tiro Devanagari Marathi", serif;
   --text-stage: clamp(18px, 1.55vw, 28px);
   --text-control: clamp(16px, 1.2vw, 22px);
   --text-detail: clamp(16px, 1.3vw, 24px);
@@ -192,7 +194,7 @@ select { color: var(--ivory); background: var(--deep-wine); border: 1px solid va
 #number-label { display: block; font-size: var(--text-stage); color: var(--ivory); margin-bottom: 12px; }
 .digit-field { position: relative; width: 100%; max-width: 1050px; margin: auto; border-radius: 5px; container-type: inline-size; }
 .digit-panels { display: grid; grid-template-columns: repeat(var(--digit-count, 6), minmax(0, 1fr)); gap: clamp(6px, 1vw, 17px); }
-.digit-panel { --digit-height: clamp(75px, 14vh, 190px); height: var(--digit-height); display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: clamp(42px, 8.5vw, 140px); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); border-radius: 5px; background: var(--ivory); box-shadow: 0 5px 0 #c19867, 0 9px 20px #250e1433; position: relative; }
+.digit-panel { --digit-height: clamp(75px, 14vh, 190px); height: var(--digit-height); display: flex; align-items: center; justify-content: center; font-family: var(--numerals); font-size: clamp(42px, 8.5vw, 140px); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); border-radius: 5px; background: var(--ivory); box-shadow: 0 5px 0 #c19867, 0 9px 20px #250e1433; position: relative; }
 .digit-panel.empty { color: #bd9b777d; }
 .digit-panel.active::after { content: ""; position: absolute; bottom: 12%; left: 34%; right: 34%; height: 3px; background: #8c3d2c; }
 .digit-field:focus-within .digit-panel.active::after { animation: brass-breathe 2s ease-in-out infinite; }
@@ -215,7 +217,7 @@ kbd { font: 14px var(--sans); padding: 3px 5px; border: 1px solid #7d50236b; bor
 .recent-results { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
 .recent-result { display: block; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--line); background: transparent; padding: 14px 0; container-type: inline-size; }
 .recent-result:hover { background: #ffffff06; }
-.recent-result strong { display: block; font: 700 clamp(24px, 2.6vw, 43px) Arial, sans-serif; letter-spacing: .09em; font-variant-numeric: tabular-nums; }
+.recent-result strong { display: block; font: 700 clamp(24px, 2.6vw, 43px) var(--numerals); letter-spacing: .09em; font-variant-numeric: tabular-nums; }
 .empty-results { height: 100%; min-height: 180px; display: flex; align-items: flex-start; flex-direction: column; justify-content: center; gap: 13px; border-top: 1px solid var(--line); }
 .empty-results img { width: 45px; opacity: .8; }
 .empty-results h3 { font: normal 28px/1.25 var(--serif); }
@@ -253,10 +255,10 @@ kbd { font: 14px var(--sans); padding: 3px 5px; border: 1px solid #7d50236b; bor
 .result-cell.saved .result-surface { color: var(--ink); }
 .cell-value { flex: 0 0 auto; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .cell-digits { display: flex; align-items: center; gap: min(.5vh, 4px); }
-.cell-digit { display: grid; place-items: center; width: min(2.7vh, 24px); height: min(3.4vh, 30px); border: 1px solid #ad7b5399; border-radius: 2px; background: #ffffff0f; font: 700 min(2.2vh, 19px) Arial, sans-serif; }
+.cell-digit { display: grid; place-items: center; width: min(2.7vh, 24px); height: min(3.4vh, 30px); border: 1px solid #ad7b5399; border-radius: 2px; background: #ffffff0f; font: 700 min(2.2vh, 19px) var(--numerals); }
 .result-cell.saved .cell-digit { border-color: #b98a4f80; background: #fff; color: var(--ink); }
 .cell-digit.active { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
-.cell-value strong { font-weight: 700; letter-spacing: .04em; }
+.cell-value strong { font-family: var(--numerals); font-weight: 700; letter-spacing: .04em; }
 .result-cell:not(.saved) .cell-value { color: var(--muted); }
 /* The board is the point of this view, so the surrounding chrome gives up its height. */
 .board-mode .masthead { padding: clamp(2px, .45vh, 6px) 0; }
