@@ -124,10 +124,10 @@
               <label id="number-label" for="ticket-input">Winning coupon number</label>
               <div id="digit-field" class="digit-field">
                 <div id="digit-panels" class="digit-panels" aria-hidden="true"></div>
-                <input id="ticket-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="entry-hint entry-error" aria-label="Winning coupon number, six digits">
+                <input id="ticket-input" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" aria-describedby="entry-hint entry-error" aria-label="Winning coupon number">
               </div>
               <div id="number-status" class="number-status" aria-live="polite"></div>
-              <p id="entry-hint" class="entry-hint">Enter all six digits, then press Enter to announce.</p>
+              <p id="entry-hint" class="entry-hint">Enter the complete number, then press Enter to announce.</p>
               <p id="entry-error" class="entry-error" role="alert"></p>
               <div class="entry-actions">
                 <button id="confirm-button" class="button gold-button" type="submit">Confirm number <kbd>Enter</kbd></button>
@@ -160,7 +160,7 @@
         <button data-screen="winners"><span class="nav-dot"></span>2025 winners</button>
         <button data-screen="draw"><span class="nav-dot"></span>Draw</button>
       </nav>
-      <span id="save-status" class="visually-hidden" role="status">Local rehearsal</span>
+      <span id="save-status" class="visually-hidden" role="status">Live event results</span>
     </footer>
   </div>
 
@@ -175,13 +175,12 @@
       <p class="playback-note">Motion and sound switches apply immediately. The background video stays muted.</p>
       <p id="playback-error" class="entry-error" role="alert"></p>
       <div class="settings-grid">
-        <label>Draw record<select id="setting-mode"><option value="rehearsal">Rehearsal (separate practice results)</option><option value="event">Live event - 25 September 2026</option></select></label>
         <label>Sound volume<input id="setting-volume" type="range" min="0" max="100" value="35"></label>
         <label class="checkbox-label"><input id="setting-auto" type="checkbox"><span>Auto-submit on the final digit<small>Off by default. Enter always confirms a complete number.</small></span></label>
         <label>LED safe margin <span id="margin-value">2%</span><input id="setting-margin" type="range" min="0" max="6" step=".5" value="2"></label>
       </div>
       <p id="welcome-media-status" class="welcome-media-status">Welcome: looping video with a poster fallback.</p>
-      <div class="fixed-coupon-info"><h3>Coupon numbers</h3><p data-coupon-range>Only 1,20,000 coupons &middot; Nos. 000000 to 119999</p><p>Six digits for every prize, including lucky-book prizes.</p></div>
+      <div class="fixed-coupon-info"><h3>Prize numbers</h3><p data-coupon-range>Coupon nos. 000000 to 119999</p><p>Vehicle prizes use 6 digits. Lucky-book prizes use 5 digits.</p></div>
       <p id="settings-error" class="entry-error" role="alert"></p>
       <div class="dialog-actions"><button class="button gold-button" type="submit">Save settings</button><button class="text-button close-dialog" type="button">Cancel</button></div>
       <div id="presentation-recovery" class="data-tools" hidden><h3>Repair presentation options</h3><p>Restore the default margin, motion and volume settings. Neither draw record nor its results will be changed.</p><button id="reset-presentation-button" type="button" class="button outline-button">Reset presentation options only</button></div>

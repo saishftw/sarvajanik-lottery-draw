@@ -49,15 +49,15 @@ The laptop and LED show the same page in a mirrored setup: input, settings, corr
 Confirmed numbers and drafts are saved to local storage. This is not cloud sync or a tamper-proof official record. Keep the physical draw record and download backups periodically.
 
 - **Settings > Download JSON backup** saves editable results, drafts, settings, and correction history.
-- **Restore backup** validates the event and record type, requires typing `RESTORE 2026`, and downloads the current record before replacement. A rehearsal backup cannot be imported into the live event.
-- The **download icon** beside **Save all results** exports the current results page as a PNG. The all-results export is a landscape sheet: one column per prize group side by side, so all 45 results are read at a glance rather than scrolled down a tall strip. The five witnessing officials are credited across its foot. These are purpose-built images with confirmed numbers and printed cash components, not screenshots. Drafts are excluded; rehearsal exports are clearly labelled.
-- **Reset saved numbers** requires typing `RESET 2026` and downloads the previous stored record first. It affects only the selected record.
+- **Restore backup** validates the live event record, requires typing `RESTORE 2026`, and downloads the current record before replacement.
+- The **download icon** beside **Save all results** exports the current results page as a PNG. The all-results export is a landscape sheet: one column per prize group side by side, so all 45 results are read at a glance rather than scrolled down a tall strip. The five witnessing officials are credited across its foot. These are purpose-built images with confirmed numbers and printed cash components, not screenshots. Drafts are excluded.
+- **Reset saved numbers** requires typing `RESET 2026` and downloads the previous stored record first.
 - Malformed data, storage write failures, and changes from another window block further announcements. They never silently discard or replace the stored record. Back up unreadable data before deliberately resetting it. After a normal storage conflict, reload to review the current saved data.
 - A damaged record can still be selected for backup/recovery, and does not prevent switching to the healthy record. Damaged presentation preferences have a separate **Reset presentation options only** action which leaves both draw records untouched.
 
 Keep only one active editing window. Revision checks detect stale records, but browser local storage is not a transactional multi-user database. Other devices visiting the same hosted site do not receive this browser's live results.
 
-The fixed-range schema preserves compatible older records without changing number strings. Old confirmed book results or correction-history entries that are not valid six-digit coupons are not padded or reinterpreted automatically: the original stored record is retained for backup and explicit correction. Partial numeric drafts of up to six digits remain valid.
+Vehicle prizes use six-digit coupon numbers from `000000` to `119999`. Lucky-book prizes use five-digit book numbers from `00000` to `99999`. Version 2 records are migrated safely in memory by removing the trailing placeholder zero from book results, book correction history, and complete six-digit book drafts; vehicle numbers are unchanged. Loading does not rewrite the original browser record, and an invalid older book value leaves that record untouched for backup and explicit correction.
 
 ## Vehicle artwork
 

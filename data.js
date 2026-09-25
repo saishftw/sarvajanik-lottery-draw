@@ -67,6 +67,12 @@ export const COUPON_FORMAT = Object.freeze({
   total: 120000,
 });
 
+export const BOOK_FORMAT = Object.freeze({
+  digits: 5,
+  min: 0,
+  max: 99999,
+});
+
 export const DRAW_ORDER = Object.freeze([
   ...PRIZES.filter((prize) => prize.category === 'books').reverse(),
   ...PRIZES.filter((prize) => prize.category !== 'books').reverse(),

@@ -1,6 +1,6 @@
-import {EVENT, PRIZES, GROUPS, COUPON_FORMAT, DRAW_ORDER, MANDAL_PERSONNEL, DRAW_WITNESSES, prizeById} from './data.js';
+import {EVENT, PRIZES, GROUPS, BOOK_FORMAT, COUPON_FORMAT, DRAW_ORDER, MANDAL_PERSONNEL, DRAW_WITNESSES, prizeById} from './data.js';
 import {
-  createState, loadState, saveState, storageKey, updateDraft, commitResult,
+  createPublishedState, createState, loadPublishedState, saveState, storageKey, updateDraft, commitResult,
   getDuplicates, updateSettings, serializeBackup, parseBackup, recoverState,
 } from './state.js';
 import {VEHICLE_IMAGES, VEHICLE_SURFACES, VEHICLE_OVERVIEW_FRAMING, WELCOME_VIDEO, SPONSOR_PANELS} from './media.js';
@@ -14,8 +14,9 @@ const message = error => error instanceof Error ? error.message : 'An unexpected
 const PREF_KEY = `${EVENT.id}:presentation`;
 const AUTOPLAY_INTERVAL_MS = 5000;
 const couponRange = `${String(COUPON_FORMAT.min).padStart(COUPON_FORMAT.digits, '0')} to ${String(COUPON_FORMAT.max).padStart(COUPON_FORMAT.digits, '0')}`;
+const bookRange = `${String(BOOK_FORMAT.min).padStart(BOOK_FORMAT.digits, '0')} to ${String(BOOK_FORMAT.max).padStart(BOOK_FORMAT.digits, '0')}`;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-let preferences = {mode: 'rehearsal', margin: 2, still: false, volume: 35};
+let preferences = {mode: 'event', margin: 2, still: false, volume: 35};
 let storage;
 let state;
 let storageProblem = '';
@@ -47,15 +48,15 @@ try {
       if (!parsed || !['event', 'rehearsal'].includes(parsed.mode) || !Number.isFinite(parsed.margin) || parsed.margin < 0 || parsed.margin > 6 || typeof parsed.still !== 'boolean' || !Number.isFinite(parsed.volume) || parsed.volume < 0 || parsed.volume > 100) {
         throw new Error('The saved options have an unsupported format.');
       }
-      preferences = parsed;
+      preferences = {...parsed, mode: 'event'};
     }
   } catch (error) {
-    preferenceProblem = `Presentation options could not load: ${message(error)} Defaults and the rehearsal record are shown. Both draw records are unchanged. Open Settings to repair presentation options or deliberately select a record.`;
+    preferenceProblem = `Presentation options could not load: ${message(error)} Live-event defaults are shown. The published results and saved browser data are unchanged. Open Settings to repair presentation options.`;
   }
-  state = loadState(storage, preferences.mode);
+  state = loadPublishedState(storage);
 } catch (error) {
   storageProblem = message(error);
-  state = createState(preferences.mode);
+  state = createPublishedState();
 }
 selectedId = firstUndrawnId();
 
@@ -76,7 +77,7 @@ function refreshStorageStatus() {
     storageProblem ? `Saving is blocked for ${state.mode}: ${storageProblem} Open Settings to back up and recover this record, or switch to the other record. Reload after resolving a storage conflict.` : '',
     preferenceProblem,
   ].filter(Boolean).join(' ');
-  $('#save-status').textContent = storageProblem ? 'Saving unavailable' : `${state.mode === 'rehearsal' ? 'Rehearsal' : 'Event'} saved locally`;
+  $('#save-status').textContent = storageProblem ? 'Saving unavailable' : 'Live event saved locally';
 }
 
 function persist(next) {
@@ -224,11 +225,14 @@ function fillPrizeSelect() {
 
 function renderEntry() {
   const result = state.results[selectedId];
+  const prize = prizeById(selectedId);
   const locked = Boolean(result) && !editing;
-  const digits = COUPON_FORMAT.digits;
+  const digits = prize.category === 'books' ? BOOK_FORMAT.digits : COUPON_FORMAT.digits;
+  const range = prize.category === 'books' ? bookRange : couponRange;
   const value = locked ? result.number : (state.drafts[selectedId] ?? (editing ? result.number : ''));
   const input = $('#ticket-input');
   if (input.value !== value) input.value = value;
+  input.maxLength = digits;
   input.disabled = locked || Boolean(storageProblem) || pendingSubmission;
   input.setAttribute('aria-label', `Winning coupon number, ${digits} digits`);
   $('#number-label').textContent = 'Winning coupon number';
@@ -243,8 +247,8 @@ function renderEntry() {
     $('#correct-button').title = `Saved ${new Date(result.updatedAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'})}${result.history.length ? `; ${result.history.length} correction(s) retained in the backup` : ''}`;
   } else {
     $('#entry-hint').textContent = state.settings.autoSubmit && !editing
-      ? `${couponRange}. Auto-submit on: the final digit confirms.`
-      : `${couponRange}. Press Enter to ${editing ? 'save the correction' : 'confirm'}.`;
+      ? `${range}. Auto-submit on: the final digit confirms.`
+      : `${range}. Press Enter to ${editing ? 'save the correction' : 'confirm'}.`;
   }
   $('#confirm-button').hidden = locked;
   $('#confirm-button').disabled = Boolean(storageProblem) || pendingSubmission || value.length !== digits;
@@ -263,18 +267,19 @@ function renderActivePrize() {
   $('#active-prize').innerHTML = `${vehicle(prize, true)}<div class="active-prize-info">${prizeMarker(prize)}<div class="active-prize-nameplate"><h2>${escape(prize.name)}</h2><p class="prize-amount">${escape(prizeCash(prize))}</p></div></div>`;
 }
 
-function cellDigits(value, {active = false} = {}) {
-  const caret = Math.min(value.length, COUPON_FORMAT.digits - 1);
-  return `<span class="cell-digits">${Array.from({length: COUPON_FORMAT.digits}, (_, index) =>
+function cellDigits(value, prize, {active = false} = {}) {
+  const digits = prize.category === 'books' ? BOOK_FORMAT.digits : COUPON_FORMAT.digits;
+  const caret = Math.min(value.length, digits - 1);
+  return `<span class="cell-digits">${Array.from({length: digits}, (_, index) =>
     `<i class="cell-digit${value[index] ? '' : ' empty'}${active && index === caret ? ' active' : ''}">${value[index] ? escape(value[index]) : ''}</i>`).join('')}</span>`;
 }
 
 function cellValue(prize) {
   const result = state.results[prize.id];
   const active = overview && prize.id === selectedId;
-  if (result && !(active && editing)) return cellDigits(result.number);
-  if (!active) return cellDigits('');
-  return cellDigits(state.drafts[prize.id] ?? (editing ? result.number : ''), {active: true});
+  if (result && !(active && editing)) return cellDigits(result.number, prize);
+  if (!active) return cellDigits('', prize);
+  return cellDigits(state.drafts[prize.id] ?? (editing ? result.number : ''), prize, {active: true});
 }
 
 function renderMandalStrip() {
@@ -516,7 +521,6 @@ function playSound(kind, rank = 0) {
 }
 
 function openSettings() {
-  $('#setting-mode').value = state.mode;
   $('#setting-auto').checked = state.settings.autoSubmit;
   $('#setting-volume').value = preferences.volume;
   $('#setting-margin').value = preferences.margin;
@@ -547,39 +551,16 @@ function backup() {
 $('#settings-form').addEventListener('submit', event => {
   event.preventDefault();
   try {
-    const nextMode = $('#setting-mode').value;
-    if (nextMode !== state.mode) {
-      let target;
-      let targetProblem = '';
-      try {
-        target = loadState(storage, nextMode);
-      } catch (error) {
-        target = createState(nextMode);
-        targetProblem = message(error);
-      }
-      const nextPreferences = {...preferences, mode: nextMode};
-      storage.setItem(PREF_KEY, JSON.stringify(nextPreferences));
-      state = target;
-      selectedId = firstUndrawnId();
-      preferences = nextPreferences;
-      preferenceProblem = '';
-      storageProblem = targetProblem;
-      editing = false;
-      toast(targetProblem
-        ? `The ${nextMode} record needs recovery. Its stored data has not been changed. Open Settings to back it up and recover it.`
-        : `Switched to ${nextMode === 'event' ? 'the live event' : 'rehearsal'}. Its own saved settings and results are loaded.`);
-    } else {
-      if (storageProblem) throw new Error('Resolve this record\'s storage warning before saving its settings, or switch to the other record.');
-      const next = updateSettings(state, {
-        autoSubmit: $('#setting-auto').checked,
-      });
-      persist(next);
-      const nextPreferences = {...preferences, volume: Number($('#setting-volume').value), margin: Number($('#setting-margin').value)};
-      storage.setItem(PREF_KEY, JSON.stringify(nextPreferences));
-      preferences = nextPreferences;
-      preferenceProblem = '';
-      toast('Stage settings saved.');
-    }
+    if (storageProblem) throw new Error('Resolve the live-event storage warning before saving settings.');
+    const next = updateSettings(state, {
+      autoSubmit: $('#setting-auto').checked,
+    });
+    persist(next);
+    const nextPreferences = {...preferences, mode: 'event', volume: Number($('#setting-volume').value), margin: Number($('#setting-margin').value)};
+    storage.setItem(PREF_KEY, JSON.stringify(nextPreferences));
+    preferences = nextPreferences;
+    preferenceProblem = '';
+    toast('Stage settings saved.');
     applyPresentation();
     refreshStorageStatus();
     renderActivePrize();
@@ -591,14 +572,8 @@ $('#settings-form').addEventListener('submit', event => {
   }
 });
 
-$('#setting-mode').addEventListener('change', () => {
-  setModeControlsDisabled($('#setting-mode').value !== state.mode);
-  if ($('#setting-mode').value !== state.mode) {
-    $('#settings-error').textContent = 'Save to switch records. Its saved results and auto-submit setting will be loaded.';
-  } else $('#settings-error').textContent = '';
-});
 $('#reset-presentation-button').addEventListener('click', async () => {
-  if (!await confirmation({title: 'Restore presentation defaults?', description: 'This resets only screen margins, volume and motion preferences. Both draw records and all results stay unchanged.', action: 'Reset presentation options'})) return;
+  if (!await confirmation({title: 'Restore presentation defaults?', description: 'This resets only screen margins, volume and motion preferences. The live draw record and all results stay unchanged.', action: 'Reset presentation options'})) return;
   try {
     const defaults = {mode: state.mode, margin: 2, still: false, volume: 35};
     storage.setItem(PREF_KEY, JSON.stringify(defaults));
@@ -607,7 +582,7 @@ $('#reset-presentation-button').addEventListener('click', async () => {
     applyPresentation();
     refreshStorageStatus();
     $('#settings-dialog').close();
-    toast('Presentation options repaired. Both draw records are unchanged.');
+    toast('Presentation options repaired. The live draw record is unchanged.');
   } catch (error) {
     $('#settings-error').textContent = message(error);
   }
@@ -666,8 +641,8 @@ $('#reset-button').addEventListener('click', async () => {
     if (!storage) throw new Error('Browser storage is unavailable. Enable it or use a normal browser profile, then reload.');
     const raw = storage.getItem(storageKey(mode));
     const approved = await confirmation({
-      title: `Reset ${mode === 'event' ? 'the live event' : 'rehearsal'}?`,
-      description: 'This clears all numbers, drafts, corrections and draw settings in this record only. A copy of the stored record will download first. The other record is not affected.',
+      title: 'Reset the live event?',
+      description: 'This clears all locally saved numbers, drafts, corrections and draw settings. A copy of the stored record will download first.',
       action: 'Back up & reset',
       phrase: 'RESET 2026',
     });
@@ -691,7 +666,7 @@ $('#reset-button').addEventListener('click', async () => {
     renderResults();
     openSettingsFieldsAfterRestore();
     $('#settings-error').textContent = '';
-    toast(`${mode === 'event' ? 'Live event' : 'Rehearsal'} reset. The other record is unchanged.`);
+    toast('Live event reset.');
   } catch (error) {
     $('#settings-error').textContent = message(error);
   }
@@ -707,7 +682,7 @@ $('#ticket-input').addEventListener('input', event => {
     persist(updateDraft(state, selectedId, value));
     renderEntry();
     if (value.length > previous.length) playSound('digit');
-    const length = COUPON_FORMAT.digits;
+    const length = prizeById(selectedId).category === 'books' ? BOOK_FORMAT.digits : COUPON_FORMAT.digits;
     if (state.settings.autoSubmit && !editing && value.length === length) submitNumber();
   } catch (error) {
     event.target.value = previous;

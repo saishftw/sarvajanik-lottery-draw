@@ -1,4 +1,5 @@
-import { COUPON_FORMAT, EVENT, prizeById } from './data.js';
+import { BOOK_FORMAT, COUPON_FORMAT, EVENT, prizeById } from './data.js';
+import { FINAL_RESULTS, FINAL_RESULTS_UPDATED_AT } from './final-results.js';
 
 const STATE_KEYS = ['version', 'eventId', 'mode', 'revision', 'updatedAt', 'results', 'drafts', 'settings'];
 const LEGACY_SETTINGS_KEYS = ['autoSubmit', 'bookDigits', 'bookMin', 'bookMax', 'bookFormatConfirmed'];
@@ -8,6 +9,8 @@ const HISTORY_KEYS = ['number', 'changedAt'];
 const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 const COUPON_MIN_TEXT = String(COUPON_FORMAT.min).padStart(COUPON_FORMAT.digits, '0');
 const COUPON_MAX_TEXT = String(COUPON_FORMAT.max).padStart(COUPON_FORMAT.digits, '0');
+const BOOK_MIN_TEXT = String(BOOK_FORMAT.min).padStart(BOOK_FORMAT.digits, '0');
+const BOOK_MAX_TEXT = String(BOOK_FORMAT.max).padStart(BOOK_FORMAT.digits, '0');
 
 export class DrawError extends Error {
   constructor(message) {
@@ -82,26 +85,50 @@ function requireTimestamp(value, label) {
   return timestamp;
 }
 
-function requireDraft(value, label) {
-  if (typeof value !== 'string' || value.length > COUPON_FORMAT.digits || /[^0-9]/.test(value)) {
-    fail(`${label} must be a string of up to ${COUPON_FORMAT.digits} digits (0–9); leading zeros are preserved.`);
-  }
+function numberFormat(prize) {
+  return prize.category === 'books' ? BOOK_FORMAT : COUPON_FORMAT;
 }
 
-function requireCouponNumber(value, label, legacyBook = false) {
-  const failCoupon = (reason) => {
-    if (legacyBook) {
-      fail(`Older book results need correction using an exported backup; ${label} ${reason}`);
+function normalizeDraft(value, label, prize, version) {
+  const format = numberFormat(prize);
+  if (typeof value !== 'string' || /[^0-9]/.test(value)) {
+    fail(`${label} must be a string of up to ${format.digits} digits (0–9); leading zeros are preserved.`);
+  }
+  if (prize.category === 'books' && version === 2 && value.length === COUPON_FORMAT.digits) {
+    if (!value.endsWith('0')) {
+      fail(`${label} must end in the placeholder zero used by the older six-digit book format.`);
     }
-    fail(`${label} ${reason}`);
-  };
-  if (typeof value !== 'string' || value.length !== COUPON_FORMAT.digits || /[^0-9]/.test(value)) {
-    failCoupon(`must be a string of exactly ${COUPON_FORMAT.digits} digits (0–9), including leading zeros.`);
+    return value.slice(0, -1);
+  }
+  if (value.length > format.digits) {
+    fail(`${label} must be a string of up to ${format.digits} digits (0–9); leading zeros are preserved.`);
+  }
+  return value;
+}
+
+function normalizeNumber(value, label, prize, version) {
+  const format = numberFormat(prize);
+  if (prize.category === 'books' && version < 3) {
+    if (version === 2) {
+      if (typeof value !== 'string' || value.length !== COUPON_FORMAT.digits || /[^0-9]/.test(value) || !value.endsWith('0')) {
+        fail(`Older book results need correction using an exported backup; ${label} must be six digits ending in the placeholder zero.`);
+      }
+      value = value.slice(0, -1);
+    } else if (typeof value === 'string' && value.length === COUPON_FORMAT.digits && /^[0-9]+$/.test(value) && value.endsWith('0')) {
+      value = value.slice(0, -1);
+    }
+  }
+  if (typeof value !== 'string' || value.length !== format.digits || /[^0-9]/.test(value)) {
+    fail(`${label} must be a string of exactly ${format.digits} digits (0–9), including leading zeros.`);
   }
   const numericValue = Number(value);
-  if (!Number.isSafeInteger(numericValue) || numericValue < COUPON_FORMAT.min || numericValue > COUPON_FORMAT.max) {
-    failCoupon(`must be between ${COUPON_MIN_TEXT} and ${COUPON_MAX_TEXT}.`);
+  if (!Number.isSafeInteger(numericValue) || numericValue < format.min || numericValue > format.max) {
+    const [minText, maxText] = prize.category === 'books'
+      ? [BOOK_MIN_TEXT, BOOK_MAX_TEXT]
+      : [COUPON_MIN_TEXT, COUPON_MAX_TEXT];
+    fail(`${label} must be between ${minText} and ${maxText}.`);
   }
+  return value;
 }
 
 function validateSettings(settings, version) {
@@ -131,8 +158,7 @@ function validateSettings(settings, version) {
 function validateResult(result, prize, version) {
   const label = `Result for ${prize.id}`;
   requireKeys(result, RESULT_KEYS, label);
-  const legacyBook = version === 1 && prize.category === 'books';
-  requireCouponNumber(result.number, label, legacyBook);
+  const number = normalizeNumber(result.number, label, prize, version);
   const confirmedTime = requireTimestamp(result.confirmedAt, `${label} confirmation time`);
   const updatedTime = requireTimestamp(result.updatedAt, `${label} update time`);
   if (updatedTime < confirmedTime) {
@@ -155,23 +181,23 @@ function validateResult(result, prize, version) {
     const entry = descriptor.value;
     const entryLabel = `${label} history entry ${index + 1}`;
     requireKeys(entry, HISTORY_KEYS, entryLabel);
-    requireCouponNumber(entry.number, entryLabel, legacyBook);
+    const historyNumber = normalizeNumber(entry.number, entryLabel, prize, version);
     const changedTime = requireTimestamp(entry.changedAt, `${entryLabel} change time`);
     if (changedTime < previousTime || changedTime > updatedTime) {
       fail(`${label} correction history must be chronological, between confirmation and the latest update.`);
     }
-    if (entry.number === previousNumber) {
+    if (historyNumber === previousNumber) {
       fail(`${label} history contains a correction that did not change the number.`);
     }
-    history.push({ number: entry.number, changedAt: entry.changedAt });
+    history.push({ number: historyNumber, changedAt: entry.changedAt });
     previousTime = changedTime;
-    previousNumber = entry.number;
+    previousNumber = historyNumber;
   }
-  if (previousTime !== updatedTime || previousNumber === result.number) {
+  if (previousTime !== updatedTime || previousNumber === number) {
     fail(`${label} update time and number must agree with its correction history.`);
   }
   return {
-    number: result.number,
+    number,
     confirmedAt: result.confirmedAt,
     updatedAt: result.updatedAt,
     history,
@@ -181,8 +207,8 @@ function validateResult(result, prize, version) {
 function normalizeState(input) {
   requireKeys(input, STATE_KEYS, 'Draw state');
   const version = input.version;
-  if (version !== 1 && version !== 2) {
-    fail('Unsupported draw state version; this display supports version 1 and 2 records only.');
+  if (version !== 1 && version !== 2 && version !== 3) {
+    fail('Unsupported draw state version; this display supports version 1, 2 and 3 records only.');
   }
   if (input.eventId !== EVENT.id) {
     fail('This draw state belongs to a different event.');
@@ -205,11 +231,10 @@ function normalizeState(input) {
   }
   for (const id of Reflect.ownKeys(input.drafts)) {
     const prize = prizeById(id);
-    requireDraft(input.drafts[id], `Draft for ${id}`);
-    drafts[id] = input.drafts[id];
+    drafts[id] = normalizeDraft(input.drafts[id], `Draft for ${id}`, prize, version);
   }
   return {
-    version: 2,
+    version: 3,
     eventId: EVENT.id,
     mode: input.mode,
     revision: input.revision,
@@ -228,7 +253,7 @@ export function storageKey(mode) {
 export function createState(mode) {
   requireMode(mode);
   return {
-    version: 2,
+    version: 3,
     eventId: EVENT.id,
     mode,
     revision: 0,
@@ -239,6 +264,22 @@ export function createState(mode) {
       autoSubmit: false,
     },
   };
+}
+
+export function createPublishedState() {
+  return validateState({
+    ...createState('event'),
+    updatedAt: FINAL_RESULTS_UPDATED_AT,
+    results: Object.fromEntries(Object.entries(FINAL_RESULTS).map(([id, number]) => [
+      id,
+      {
+        number,
+        confirmedAt: FINAL_RESULTS_UPDATED_AT,
+        updatedAt: FINAL_RESULTS_UPDATED_AT,
+        history: [],
+      },
+    ])),
+  }, 'event');
 }
 
 export function validateState(input, expectedMode) {
@@ -280,6 +321,10 @@ function readStoredState(storage, mode) {
 
 export function loadState(storage, mode) {
   return readStoredState(storage, mode) ?? createState(mode);
+}
+
+export function loadPublishedState(storage) {
+  return readStoredState(storage, 'event') ?? createPublishedState();
 }
 
 export function saveState(storage, next, expectedRevision) {
@@ -337,9 +382,8 @@ export function recoverState(storage, mode, expectedRaw) {
 
 export function updateDraft(state, id, value) {
   const next = validateState(state);
-  prizeById(id);
-  requireDraft(value, `Draft for ${id}`);
-  next.drafts[id] = value;
+  const prize = prizeById(id);
+  next.drafts[id] = normalizeDraft(value, `Draft for ${id}`, prize, next.version);
   return next;
 }
 
@@ -351,14 +395,14 @@ function findDuplicates(state, number) {
 
 export function getDuplicates(state, id, number) {
   const safe = validateState(state);
-  prizeById(id);
-  requireDraft(number, `Number for ${id}`);
+  const prize = prizeById(id);
+  normalizeDraft(number, `Number for ${id}`, prize, safe.version);
   return findDuplicates(safe, number).filter((prize) => prize.id !== id);
 }
 
 export function commitResult(state, id, number, options = {}) {
   const next = validateState(state);
-  prizeById(id);
+  const prize = prizeById(id);
   requireKeys(options, ['allowDuplicate', 'correction', 'now'], 'Confirmation options', true);
   const allowDuplicate = hasOwn(options, 'allowDuplicate') ? options.allowDuplicate : false;
   const correction = hasOwn(options, 'correction') ? options.correction : false;
@@ -366,7 +410,7 @@ export function commitResult(state, id, number, options = {}) {
   if (typeof allowDuplicate !== 'boolean' || typeof correction !== 'boolean') {
     fail('Duplicate permission and correction permission must be explicitly true or false.');
   }
-  requireCouponNumber(number, `Number for ${id}`);
+  normalizeNumber(number, `Number for ${id}`, prize, next.version);
   const nowTime = requireTimestamp(now, 'Confirmation time');
   const previous = next.results[id];
   if (previous && !correction) {

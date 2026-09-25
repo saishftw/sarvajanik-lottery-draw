@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { COUPON_FORMAT, DRAW_ORDER, EVENT, GROUPS, MANDAL_PERSONNEL, PRIZES, prizeById } from './data.js';
+import { BOOK_FORMAT, COUPON_FORMAT, DRAW_ORDER, EVENT, GROUPS, MANDAL_PERSONNEL, PRIZES, prizeById } from './data.js';
 import {
   DrawError,
   storageKey,
+  createPublishedState,
   createState,
   validateState,
   loadState,
+  loadPublishedState,
   saveState,
   recoverState,
   updateDraft,
@@ -49,7 +51,7 @@ function clone(value) {
 }
 
 function legacyState({
-  number = '000001',
+  number = '00001',
   history = [],
   mode = 'event',
   revision = 4,
@@ -96,6 +98,7 @@ test('catalog exports the confirmed event data, personnel, coupon format, and dr
   });
   assert.deepEqual(GROUPS.map(({ id }) => id), ['cars', 'scooters', 'books']);
   assert.deepEqual(COUPON_FORMAT, { digits: 6, min: 0, max: 119999, total: 120000 });
+  assert.deepEqual(BOOK_FORMAT, { digits: 5, min: 0, max: 99999 });
   assert.deepEqual(MANDAL_PERSONNEL, [
     { name: 'Vasudev Vithal Sahakari', role: 'President', phone: '9850484293' },
     { name: 'Shirish M. Naik', role: 'Secretary', phone: '9604665213' },
@@ -126,10 +129,10 @@ test('catalog exports the confirmed event data, personnel, coupon format, and dr
   assert.throws(() => { PRIZES[0].name = 'changed'; }, TypeError);
 });
 
-test('new states start at version 2 with only auto-submit settings and independent copies', () => {
+test('new states start at version 3 with only auto-submit settings and independent copies', () => {
   const event = createState('event');
   assert.deepEqual(event, {
-    version: 2,
+    version: 3,
     eventId: EVENT.id,
     mode: 'event',
     revision: 0,
@@ -148,15 +151,30 @@ test('new states start at version 2 with only auto-submit settings and independe
   assert.throws(() => storageKey('live'), DrawError);
 });
 
-test('coupon numbers accept the full shared range and preserve leading zeros', () => {
+test('published live state contains all 45 committed final results', () => {
+  const published = createPublishedState();
+  assert.equal(published.mode, 'event');
+  assert.equal(Object.keys(published.results).length, 45);
+  assert.equal(published.results['prize-01'].number, '075034');
+  assert.equal(published.results['prize-30'].number, '110418');
+  assert.equal(published.results['book-01'].number, '11900');
+  assert.equal(published.results['book-15'].number, '10818');
+  assert.equal(loadPublishedState(memoryStorage()).results['book-03'].number, '08521');
+  for (const prize of PRIZES) {
+    const number = published.results[prize.id].number;
+    assert.match(number, prize.category === 'books' ? /^\d{5}$/ : /^\d{6}$/);
+  }
+});
+
+test('vehicle coupons use six digits and book prizes use five digits', () => {
   const storage = memoryStorage();
   let state = confirm(createState('event'), 'prize-01', '000000');
-  state = confirm(state, 'book-01', '119999', { allowDuplicate: true });
-  state = updateDraft(state, 'book-02', '000001');
+  state = confirm(state, 'book-01', '99999', { allowDuplicate: true });
+  state = updateDraft(state, 'book-02', '00001');
   const saved = saveState(storage, state, 0);
   assert.equal(saved.results['prize-01'].number, '000000');
-  assert.equal(saved.results['book-01'].number, '119999');
-  assert.equal(saved.drafts['book-02'], '000001');
+  assert.equal(saved.results['book-01'].number, '99999');
+  assert.equal(saved.drafts['book-02'], '00001');
   assert.deepEqual(loadState(storage, 'event'), saved);
   assert.deepEqual(parseBackup(serializeBackup(saved), 'event'), saved);
   assert.equal(storage.writes, 1);
@@ -181,6 +199,8 @@ test('draft updates stay partial, preserve other entries, and reject invalid sha
   }
   assert.throws(() => updateDraft(state, '__proto__', '1'));
   assert.equal(updateDraft(state, 'prize-04', '999999').drafts['prize-04'], '999999');
+  assert.equal(updateDraft(state, 'book-04', '99999').drafts['book-04'], '99999');
+  assert.throws(() => updateDraft(state, 'book-04', '999999'));
 });
 
 test('updateSettings only accepts autoSubmit and preserves current results', () => {
@@ -205,18 +225,20 @@ test('updateSettings only accepts autoSubmit and preserves current results', () 
   }
 });
 
-test('duplicates warn across all prizes and explicit override still works', () => {
+test('duplicates warn for matching numbers while different digit formats stay distinct', () => {
   let state = confirm(createState('event'), 'prize-01', '000001');
-  assert.deepEqual(getDuplicates(state, 'book-01', '000001'), [prizeById('prize-01')]);
-  assert.throws(() => confirm(state, 'book-01', '000001'), /Duplicate number/);
-  state = confirm(state, 'book-01', '000001', { allowDuplicate: true });
+  assert.deepEqual(getDuplicates(state, 'book-01', '00001'), []);
+  state = confirm(state, 'book-01', '00001');
+  assert.deepEqual(getDuplicates(state, 'book-02', '00001'), [prizeById('book-01')]);
+  assert.throws(() => confirm(state, 'book-02', '00001'), /Duplicate number/);
+  state = confirm(state, 'book-02', '00001', { allowDuplicate: true });
   assert.deepEqual(
     getDuplicates(state, 'prize-16', '000001').map(({ id }) => id),
-    ['prize-01', 'book-01'],
+    ['prize-01'],
   );
   assert.deepEqual(
-    getDuplicates(state, 'book-01', '000001').map(({ id }) => id),
-    ['prize-01'],
+    getDuplicates(state, 'book-01', '00001').map(({ id }) => id),
+    ['book-02'],
   );
 });
 
@@ -265,7 +287,7 @@ test('validation returns a deep independent copy of current records', () => {
   assert.equal(original.drafts['book-01'], '000');
 });
 
-test('current backups round-trip and legacy backups upgrade to version 2 without writes', () => {
+test('current backups round-trip and legacy backups upgrade to version 3 without writes', () => {
   const storage = memoryStorage();
   const legacy = legacyState();
   storage.entries.set(storageKey('event'), JSON.stringify(legacy));
@@ -273,14 +295,14 @@ test('current backups round-trip and legacy backups upgrade to version 2 without
   assert.equal(storage.writes, 0);
   assert.deepEqual(storage.entries.get(storageKey('event')), JSON.stringify(legacy));
   assert.deepEqual(loaded, {
-    version: 2,
+    version: 3,
     eventId: EVENT.id,
     mode: 'event',
     revision: 4,
     updatedAt: T1,
     results: {
       'book-01': {
-        number: '000001',
+        number: '00001',
         confirmedAt: T1,
         updatedAt: T1,
         history: [],
@@ -292,23 +314,57 @@ test('current backups round-trip and legacy backups upgrade to version 2 without
     settings: { autoSubmit: false },
   });
   const saved = saveState(storage, updateSettings(loaded, { autoSubmit: true }), 4);
-  assert.equal(saved.version, 2);
+  assert.equal(saved.version, 3);
   assert.equal(saved.settings.autoSubmit, true);
   assert.equal(storage.writes, 1);
   assert.deepEqual(parseBackup(JSON.stringify(legacy), 'event'), loaded);
   assert.deepEqual(parseBackup(serializeBackup(saved), 'event'), saved);
 });
 
-test('legacy confirmed book results and history entries must already be six-digit coupons', () => {
-  for (const bad of [legacyState({ number: '00001' }), legacyState({ history: [{ number: '00001', changedAt: T1 }] })]) {
-    assert.throws(() => validateState(bad), /Older book results need correction using an exported backup/);
-    assert.throws(() => parseBackup(JSON.stringify(bad), 'event'), /Older book results need correction using an exported backup/);
-  }
-  const validLegacy = legacyState({ number: '119999', history: [{ number: '000001', changedAt: T1 }] });
+test('legacy five-digit book results remain unchanged', () => {
+  const validLegacy = legacyState({ number: '11999', history: [{ number: '00001', changedAt: T1 }] });
   const upgraded = validateState(validLegacy);
-  assert.equal(upgraded.version, 2);
-  assert.equal(upgraded.results['book-01'].number, '119999');
-  assert.deepEqual(upgraded.results['book-01'].history, [{ number: '000001', changedAt: T1 }]);
+  assert.equal(upgraded.version, 3);
+  assert.equal(upgraded.results['book-01'].number, '11999');
+  assert.deepEqual(upgraded.results['book-01'].history, [{ number: '00001', changedAt: T1 }]);
+});
+
+test('version 2 book results discard only the trailing placeholder zero without writing on load', () => {
+  const storage = memoryStorage();
+  const old = {
+    ...createState('event'),
+    version: 2,
+    revision: 7,
+    updatedAt: T2,
+    results: {
+      'book-01': {
+        number: '123450',
+        confirmedAt: T1,
+        updatedAt: T2,
+        history: [{ number: '543210', changedAt: T2 }],
+      },
+      'prize-01': {
+        number: '012345',
+        confirmedAt: T1,
+        updatedAt: T1,
+        history: [],
+      },
+    },
+    drafts: {'book-02': '67890'},
+  };
+  const raw = JSON.stringify(old);
+  storage.entries.set(storageKey('event'), raw);
+  const loaded = loadState(storage, 'event');
+  assert.equal(storage.writes, 0);
+  assert.equal(storage.entries.get(storageKey('event')), raw);
+  assert.equal(loaded.results['book-01'].number, '12345');
+  assert.deepEqual(loaded.results['book-01'].history, [{ number: '54321', changedAt: T2 }]);
+  assert.equal(loaded.results['prize-01'].number, '012345');
+  assert.equal(loaded.drafts['book-02'], '67890');
+  assert.throws(
+    () => validateState({...old, results: {...old.results, 'book-01': {...old.results['book-01'], number: '123456'}}}),
+    /placeholder zero/,
+  );
 });
 
 test('backups reject malformed input, wrong mode, and prototype pollution without mutating globals', () => {
@@ -370,7 +426,7 @@ test('recovery uses the exact raw text and never removes the old record first', 
   assert.throws(() => recoverState(storage, 'event', `${raw} `), /Recovery conflict/);
   assert.equal(storage.entries.get(storageKey('event')), raw);
   const recovered = recoverState(storage, 'event', raw);
-  assert.equal(recovered.version, 2);
+  assert.equal(recovered.version, 3);
   assert.equal(recovered.revision, 1);
   assert.equal(storage.writes, writesBefore + 1);
   assert.deepEqual(loadState(storage, 'rehearsal'), rehearsal);
