@@ -74,7 +74,8 @@
 .result-surface { position: relative; display: flex; align-items: stretch; min-height: 0; width: 100%; height: 100%; border: 1px solid var(--line); background: #3e1118; border-radius: 4px; overflow: hidden; }
 .result-cell.active .result-surface { border-color: var(--gold); outline: 2px solid var(--gold); outline-offset: 1px; }
 .results-grid .result-surface > .prize-marker { flex: 0 0 auto; align-self: center; margin-left: clamp(2px, .35vw, 6px); }
-.results-grid .result-copy { padding: 0 clamp(4px, .6vw, 12px); }
+.results-grid .result-copy { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding: 0 clamp(4px, .6vw, 12px); }
+.results-grid .result-copy > span { max-width: 100%; }
 .results-grid .result-name, .results-grid .result-name-compact { font-size: min(1.0vw, 1.75vh, 18px); line-height: 1.15; }
 .results-grid .result-money { flex-shrink: 0; color: var(--gold); font-size: min(.85vw, 1.55vh, 16px); font-variant-numeric: tabular-nums; }
 .result-cell.saved .result-money { color: #8a5a2b; }
@@ -115,7 +116,7 @@
 .recent-number-row .prize-tab { min-width: 35px; min-height: 28px; padding: 5px; font-size: 16px; }
 .recent-number-row .prize-medallion[data-tier="1"]::before { width: 16px; height: 16px; top: -7px; }
 .recent-number-row strong { min-width: 0; font-size: min(calc(105cqw / var(--result-digits, 6)), 38px); letter-spacing: .055em; }
-.recent-result .prize-caption { padding: 7px 12px; }
+.recent-result .prize-caption { flex-direction: column; align-items: stretch; gap: 4px; padding: 7px 12px; }
 .recent-result .prize-caption-name { font-size: var(--text-control); }
 
 .page-download { width: 44px; height: 44px; border-color: var(--line); }
@@ -157,6 +158,7 @@
   .vehicle-tile .prize-caption { padding: 2px 3px 3px; gap: 0; }
 }
 @media (max-width: 900px) and (max-aspect-ratio: 5/4) {
+  .results-grid .result-money { font-size: 14px; }
   .active-prize-info > .prize-marker { --marker-size: 46px; font-size: 22px; }
   .active-prize .active-prize-info { padding: 12px; gap: 12px; }
   .result-number-row { min-height: 55px; }

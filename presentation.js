@@ -19,7 +19,9 @@ export function prizeMarker(prize, group = false) {
   return `<span class="prize-marker ${tier ? 'prize-medallion' : 'prize-tab'}" data-tier="${tier}" role="img" aria-label="${escapeHtml(description)}"><span class="prize-marker-value" aria-hidden="true">${escapeHtml(text)}</span></span>`;
 }
 
-export function prizeCaption(prize) {
+export const prizeCash = (prize, group = false) => `${prize.category === 'books' ? '' : '+ '}${money(prize.amount)}${group && prize.category !== 'cars' ? ' each' : ''}`;
+
+export function prizeCaption(prize, group = false) {
   const name = prize.category === 'books' ? `Book prize ${prize.rank}` : prize.shortName;
-  return `<span class="prize-caption"><span class="prize-caption-name">${escapeHtml(name)}</span></span>`;
+  return `<span class="prize-caption"><span class="prize-caption-name">${escapeHtml(name)}</span><span class="prize-caption-amount">${escapeHtml(prizeCash(prize, group))}</span></span>`;
 }
