@@ -6,7 +6,7 @@ import {
 import {VEHICLE_IMAGES, VEHICLE_SURFACES, VEHICLE_OVERVIEW_FRAMING, WELCOME_VIDEO, SPONSOR_PANELS} from './media.js';
 import {downloadFile, exportResults} from './export.js';
 import {createWelcomeStage} from './welcome.js';
-import {escapeHtml as escape, money, monogram, prizeLabel as label, prizeTier, prizeMarker, prizeCaption} from './presentation.js';
+import {escapeHtml as escape, money, monogram, prizeLabel as label, prizeTier, prizeMarker, prizeCaption, prizeCash} from './presentation.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -176,7 +176,7 @@ function renderVehicleOverview() {
     {id: 'scooters', title: 'Scooters', subtitle: 'Five of each model'},
   ].map(group => `<section class="vehicle-group vehicle-group-${group.id}" aria-labelledby="vehicle-group-${group.id}"><header class="vehicle-group-heading"><h2 id="vehicle-group-${group.id}">${group.title}</h2><p>${group.subtitle}</p></header><div class="vehicle-group-grid">${showcasePrizes.filter(prize => prize.category === group.id).map(prize => {
     const rank = prize.category === 'scooters' ? `Prizes ${prize.rank}-${prize.rank + 4}` : label(prize);
-    return `<button class="vehicle-tile" data-feature-prize="${prize.id}" data-prize-tier="${prizeTier(prize)}" style="--vehicle-paper:${VEHICLE_SURFACES[prize.imageKey] || '#fffdf7'}" aria-label="${escape(`${rank}: ${prize.name}. Open spotlight.`)}">${prizeMarker(prize, true)}<span class="vehicle-tile-surface">${vehicle(prize, true)}${prizeCaption(prize)}</span></button>`;
+    return `<button class="vehicle-tile" data-feature-prize="${prize.id}" data-prize-tier="${prizeTier(prize)}" style="--vehicle-paper:${VEHICLE_SURFACES[prize.imageKey] || '#fffdf7'}" aria-label="${escape(`${rank}: ${prize.name}, cash component ${prizeCash(prize, true)}. Open spotlight.`)}">${prizeMarker(prize, true)}<span class="vehicle-tile-surface">${vehicle(prize, true)}${prizeCaption(prize, true)}</span></button>`;
   }).join('')}</div></section>`).join('');
 }
 
@@ -195,7 +195,7 @@ function renderShowcase() {
   $('#prize-pagination').hidden = !['prizes', 'sponsors'].includes(showcase);
   if (showcase === 'prizes') {
     const prize = showcasePrizes[prizePage];
-    $('#prize-showcase').innerHTML = `<article class="featured-prize">${vehicle(prize)}<div class="prize-copy">${prizeMarker(prize, true)}<h2>${escape(prize.name)}</h2><p class="cash-note">${prize.category === 'books' ? '15 lucky-book prizes. Coupon terms apply.' : 'Coupon terms & taxes apply.'}</p></div></article>`;
+    $('#prize-showcase').innerHTML = `<article class="featured-prize">${vehicle(prize)}<div class="prize-copy">${prizeMarker(prize, true)}<h2>${escape(prize.name)}</h2><p class="prize-amount">${escape(prizeCash(prize, true))}</p><p class="cash-note">${prize.category === 'books' ? '15 lucky-book cash prizes. Coupon terms apply.' : 'Cash component. Coupon terms & taxes apply.'}</p></div></article>`;
     $('#prize-pagination').innerHTML = pager(prizePage, showcasePrizes.length, 'prize', rotatePrizes);
   } else if (showcase === 'sponsors') {
     const panel = SPONSOR_PANELS[sponsorPage];
@@ -260,7 +260,7 @@ function renderActivePrize() {
   const prize = prizeById(selectedId);
   $('#prize-select').value = selectedId;
   $('#active-prize').dataset.prizeTier = prizeTier(prize);
-  $('#active-prize').innerHTML = `${vehicle(prize, true)}<div class="active-prize-info">${prizeMarker(prize)}<div class="active-prize-nameplate"><h2>${escape(prize.name)}</h2></div></div>`;
+  $('#active-prize').innerHTML = `${vehicle(prize, true)}<div class="active-prize-info">${prizeMarker(prize)}<div class="active-prize-nameplate"><h2>${escape(prize.name)}</h2><p class="prize-amount">${escape(prizeCash(prize))}</p></div></div>`;
 }
 
 function cellDigits(value, {active = false} = {}) {
@@ -293,15 +293,15 @@ function renderResults() {
     `15 Lucky Book Number Prizes \u00b7 ${money(PRIZES.at(-1).amount)} each`,
   ].map(heading => `<span>${escape(heading)}</span>`).join('');
   $('#recent-results').innerHTML = confirmed.length
-    ? confirmed.map(prize => `<button class="recent-result" data-prize="${prize.id}" aria-label="${escape(`${label(prize)}, ${prize.shortName}, ${state.results[prize.id].number}`)}" style="--result-digits:${Math.max(6, state.results[prize.id].number.length)}"><span class="recent-number-row">${prizeMarker(prize)}<strong>${escape(state.results[prize.id].number)}</strong></span>${prizeCaption(prize)}</button>`).join('')
+    ? confirmed.map(prize => `<button class="recent-result" data-prize="${prize.id}" aria-label="${escape(`${label(prize)}, ${prize.shortName}, cash component ${prizeCash(prize)}, ${state.results[prize.id].number}`)}" style="--result-digits:${Math.max(6, state.results[prize.id].number.length)}"><span class="recent-number-row">${prizeMarker(prize)}<strong>${escape(state.results[prize.id].number)}</strong></span>${prizeCaption(prize)}</button>`).join('')
     : '<div class="empty-results"><h3>No results yet</h3></div>';
   $('#results-grid').innerHTML = PRIZES.map(prize => {
     const result = state.results[prize.id];
     const active = overview && prize.id === selectedId;
     const name = prize.category === 'books' ? `Lucky book prize ${prize.rank}` : prize.name;
     const compact = prize.category === 'books' ? `Book prize ${prize.rank}` : prize.shortName;
-    const money_ = prize.category === 'books' ? `<span class="result-money">${escape(money(prize.amount))}</span>` : '';
-    return `<button class="result-cell${result ? ' saved' : ''}${active ? ' active' : ''}" data-prize="${prize.id}" data-prize-tier="${prizeTier(prize)}" style="--result-digits:${Math.max(6, result?.number.length ?? 6)}" aria-label="${escape(`${label(prize)}, ${prize.shortName}, ${result ? result.number : 'not announced'}`)}"><span class="result-surface">${prizeMarker(prize)}<span class="result-copy"><span class="result-name">${escape(name)}</span><span class="result-name-compact" aria-hidden="true">${escape(compact)}</span>${money_}</span><span class="cell-value">${cellValue(prize)}</span></span></button>`;
+    const money_ = `<span class="result-money">${escape(prizeCash(prize))}</span>`;
+    return `<button class="result-cell${result ? ' saved' : ''}${active ? ' active' : ''}" data-prize="${prize.id}" data-prize-tier="${prizeTier(prize)}" style="--result-digits:${Math.max(6, result?.number.length ?? 6)}" aria-label="${escape(`${label(prize)}, ${prize.shortName}, cash component ${prizeCash(prize)}, ${result ? result.number : 'not announced'}`)}"><span class="result-surface">${prizeMarker(prize)}<span class="result-copy"><span class="result-name">${escape(name)}</span><span class="result-name-compact" aria-hidden="true">${escape(compact)}</span>${money_}</span><span class="cell-value">${cellValue(prize)}</span></span></button>`;
   }).join('');
   mountEntryField();
 }

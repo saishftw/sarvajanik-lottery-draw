@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {prizeById} from './data.js';
-import {escapeHtml, ordinal, prizeTier, prizeMarker, prizeCaption} from './presentation.js';
+import {PRIZES, prizeById} from './data.js';
+import {escapeHtml, money, ordinal, prizeTier, prizeMarker, prizeCaption, prizeCash} from './presentation.js';
 
 test('only the first three main prizes receive premium markers', () => {
   assert.equal(prizeTier(prizeById('prize-01')), 1);
@@ -25,11 +25,23 @@ test('markers distinguish individual prizes from five-scooter groups', () => {
   assert.equal(ordinal(21), '21st');
 });
 
-test('captions carry the prize name only, without the printed cash component', () => {
-  assert.doesNotMatch(prizeCaption(prizeById('prize-01')), /20,46,415/);
-  assert.doesNotMatch(prizeCaption(prizeById('prize-16')), /58,345/);
-  assert.doesNotMatch(prizeCaption(prizeById('book-01')), /10,000/);
+test('captions carry the prize name and printed cash component for every prize', () => {
+  for (const prize of PRIZES) {
+    assert.ok(prizeCaption(prize).includes(`<span class="prize-caption-amount">${prizeCash(prize)}</span>`));
+    assert.ok(prizeCash(prize).includes(money(prize.amount)));
+  }
   assert.match(prizeCaption(prizeById('prize-01')), /BMW iX1/);
+});
+
+test('cash components use Indian grouping and distinguish grouped from individual awards', () => {
+  assert.equal(prizeCash(prizeById('prize-01')), '+ ₹ 20,46,415');
+  assert.equal(prizeCash(prizeById('prize-01'), true), '+ ₹ 20,46,415');
+  assert.equal(prizeCash(prizeById('prize-16')), '+ ₹ 58,345');
+  assert.equal(prizeCash(prizeById('prize-16'), true), '+ ₹ 58,345 each');
+  assert.equal(prizeCash(prizeById('book-01')), '₹ 10,000');
+  assert.equal(prizeCash(prizeById('book-01'), true), '₹ 10,000 each');
+  assert.match(prizeCaption(prizeById('prize-16'), true), /\+ ₹ 58,345 each/);
+  assert.doesNotMatch(prizeCaption(prizeById('prize-16')), /each/);
 });
 
 test('shared captions escape text and distinguish book entries', () => {
