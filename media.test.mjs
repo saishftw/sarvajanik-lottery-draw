@@ -78,8 +78,8 @@ test('supporter panels stay inside their own artwork and resolve to local files'
   assert.deepEqual(SPONSOR_PANELS.filter(panel => panel.mark).map(panel => panel.label), ['Sai Opticians, Panaji']);
 });
 
-test('the supplied identity and transparent title crop are preserved as local PNG assets', async () => {
-  for (const [name, width, height] of [['ganesh-title-source.png', 535, 645], ['ganesh-title.png', 535, 207]]) {
+test('the supplied identity and transparent title artwork are preserved as local PNG assets', async () => {
+  for (const [name, width, height] of [['ganesh-title-source.png', 535, 645], ['savardeche-raja-logo.PNG', 2172, 724]]) {
     const image = await readFile(new URL(`artwork/${name}`, import.meta.url));
     assert.equal(image.subarray(1, 4).toString(), 'PNG');
     assert.equal(image.readUInt32BE(16), width);
