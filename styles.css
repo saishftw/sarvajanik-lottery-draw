@@ -224,8 +224,8 @@ kbd { font: 14px var(--sans); padding: 3px 5px; border: 1px solid #7d50236b; bor
 .focus-mode .results-rail { display: none; }
 .focus-mode .digit-panel { font-size: clamp(58px, 11vw, 165px); }
 .focus-mode .active-prize { flex: .7; }
-.overview-view { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.board-headings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(6px, 1vw, 20px); margin-bottom: clamp(3px, .6vh, 8px); color: var(--gold); font-size: min(1.6vh, 14px); letter-spacing: .12em; text-transform: uppercase; }
+.overview-view { --results-columns: minmax(0, 1.05fr) minmax(0, 1.05fr) minmax(0, .9fr); flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.board-headings { display: grid; grid-template-columns: var(--results-columns); gap: clamp(6px, 1vw, 20px); margin-bottom: clamp(3px, .6vh, 8px); color: var(--gold); font-size: min(1.6vh, 14px); letter-spacing: .12em; text-transform: uppercase; }
 .board-headings span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-left: clamp(2px, .35vw, 6px); }
 .mandal-strip { flex-shrink: 0; margin-top: clamp(3px, .6vh, 9px); padding-top: clamp(3px, .6vh, 8px); border-top: 1px solid var(--line); text-align: center; }
 .witness-row { display: flex; align-items: center; gap: clamp(8px, 1.4vw, 26px); margin-bottom: clamp(3px, .7vh, 9px); }
@@ -245,7 +245,7 @@ kbd { font: 14px var(--sans); padding: 3px 5px; border: 1px solid #7d50236b; bor
 .mandal-sep { flex-shrink: 0; color: var(--gold); font-size: min(.8vh, 7px); opacity: .8; }
 .mandal-phone { flex-shrink: 0; color: var(--gold); font-size: min(1.3vh, 11px); font-variant-numeric: tabular-nums; }
 /* Three columns of fifteen slim rows mirror the printed coupon. */
-.results-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(15, minmax(0, 1fr)); grid-auto-flow: column; gap: clamp(2px, .45vh, 7px) clamp(6px, 1vw, 20px); flex: 1; min-height: 0; }
+.results-grid { display: grid; grid-template-columns: var(--results-columns); grid-template-rows: repeat(15, minmax(0, 1fr)); grid-auto-flow: column; gap: clamp(2px, .45vh, 7px) clamp(6px, 1vw, 20px); flex: 1; min-height: 0; }
 .result-cell { display: block; padding: 0; border: 0; background: transparent; min-height: 0; text-align: left; }
 .result-copy { flex: 1; min-width: 0; display: flex; align-items: baseline; align-items: center; gap: clamp(4px, .5vw, 10px); }
 .result-name, .result-name-compact { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; text-align: center; }
